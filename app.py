@@ -30,7 +30,7 @@ custom_css = """
     }
     
     /* 3. 일반 텍스트 및 라벨 강제 화이트 */
-    p, span, div, label, .stMarkdown {
+    p, span, div, label, .stMarkdown, .stText {
         color: #E0E0E0 !important;
     }
     
@@ -60,18 +60,7 @@ custom_css = """
         color: #FFFFFF !important;
     }
 
-    /* 7. 경고 박스 */
-    .warning-box {
-        background-color: #1a0505;
-        border: 1px solid #333;
-        border-left: 5px solid #FF5252;
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        color: #FF5252 !important;
-    }
-
-    /* 8. 버튼 스타일 (네온 그린) */
+    /* 7. 버튼 스타일 (네온 그린) */
     .stButton>button {
         width: 100%;
         background-color: #00E676; /* 버튼 색상 */
@@ -88,7 +77,7 @@ custom_css = """
         color: #000000 !important;
     }
     
-    /* 9. 가격 테이블 스타일 */
+    /* 8. 가격 테이블 스타일 */
     .price-table {
         width: 100%;
         text-align: center;
@@ -138,8 +127,7 @@ if 'user_data' not in st.session_state:
 
 # [Intro]
 if st.session_state.step == 0:
-    # 로고: 어두운 배경에 어울리는 이미지로 교체 권장
-    st.image("https://placehold.co/600x150/000000/00E676?text=JAYEON+HANBANG+DARK", use_column_width=True)
+    st.image("https://placehold.co/600x150/000000/00E676?text=JAYEON+HANBANG", use_column_width=True)
     
     st.markdown("<h1 style='text-align: center;'>비대면 처방 정밀 진단</h1>", unsafe_allow_html=True)
     st.markdown("---")
@@ -234,28 +222,24 @@ elif st.session_state.step == 2:
         st.session_state.step = 3
         st.rerun()
 
-# [Phase 3: 처방 및 구원]
+# [Phase 3: 처방 및 구원 - 안정화 버전]
 elif st.session_state.step == 3:
     data = st.session_state.user_data
     
-    # 로딩 애니메이션 (권위 부여)
-    msg_list = ["기초 대사량 분석 중...", "교감 신경 민감도 시뮬레이션...", "최적 처방 단계 매칭 중..."]
-    bar = st.progress(0)
-    status_text = st.empty()
-    
-    for i, msg in enumerate(msg_list):
-        status_text.text(msg)
-        time.sleep(0.5)
-        bar.progress((i + 1) * 33)
+    # [FIX]: DOM 충돌 방지를 위해 반복문 애니메이션 제거하고 안전한 spinner 사용
+    with st.spinner("AI가 교감 신경 민감도와 대사량을 분석 중입니다..."):
+        time.sleep(2.0)
     
     # 분석 로직
-    is_max = "초고도 내성" in data['history']
+    is_max = "초고도 내성" in data.get('history', '')
     drug_name = "지방사약 MAX" if is_max else "지방사약 (Standard)"
     drug_level = "8단계 이상" if is_max else "3~5단계 (Standard)"
     
+    cause_val = data.get('cause', '대사 저하')
     diagnosis_title = "대사 기능 저하형 비만"
-    if "식욕" in data['cause']: diagnosis_title = "위열(Stomach Heat) 과다형 비만"
-    if "스트레스" in data['cause']: diagnosis_title = "스트레스성 간기 울결형 비만"
+    if "식욕" in cause_val: diagnosis_title = "위열(Stomach Heat) 과다형 비만"
+    elif "스트레스" in cause_val: diagnosis_title = "스트레스성 간기 울결형 비만"
+    elif "부종" in cause_val: diagnosis_title = "수독(Water Poison) 정체형 비만"
     
     # 결과 화면
     st.markdown(f"## 📋 비만 유형: <span style='color:#FF5252'>{diagnosis_title}</span>", unsafe_allow_html=True)
@@ -272,16 +256,15 @@ elif st.session_state.step == 3:
     
     col1, col2 = st.columns([1, 1.2])
     with col1:
-        # 블랙 배경에 맞는 이미지
         st.image("https://placehold.co/400x400/111111/00E676?text=FAT+KILLER", caption=drug_name)
     with col2:
         st.markdown(f"<h3 style='color:#00E676'>{drug_name}</h3>", unsafe_allow_html=True)
         st.markdown(f"- **처방 강도**: {drug_level}")
-        st.markdown(f"- **핵심 기전**: {data['cause'].split('▶')[0][:10]}... 집중 케어")
+        st.markdown(f"- **핵심 기전**: {cause_val.split('▶')[0][:10]}... 집중 케어")
         st.markdown("- **예상 반응**: 복용 30분 후 가벼운 열감 (운동 효과)")
         
         # 보조제 추천
-        if data['symptoms'] and "해당" not in data['symptoms'][0]:
+        if data.get('symptoms') and "해당" not in data['symptoms'][0]:
             st.markdown("<hr style='border-top: 1px solid #333;'>", unsafe_allow_html=True)
             st.markdown("**➕ 추가 처방 (Option)**")
             for sym in data['symptoms']:
