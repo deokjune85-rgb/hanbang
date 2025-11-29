@@ -104,12 +104,22 @@ if 'step' not in st.session_state:
 if 'user_data' not in st.session_state:
     st.session_state.user_data = {}
 
-# [FIX] 끊김 방지를 위한 단어 단위 스트리밍
-def stream_text(text):
-    """Gemini-like smooth streaming (Word based)"""
-    for word in text.split(" "):
-        yield word + " "
-        time.sleep(0.05) # 속도 조절
+# [CRITICAL FIX] 끊김 없는 강제 타이핑 함수
+def type_writer(text, speed=0.01):
+    """
+    st.write_stream 대신 사용하는 수동 타이핑 함수.
+    끊김 없이 확실하게 출력함.
+    """
+    placeholder = st.empty()
+    display_text = ""
+    for char in text:
+        display_text += char
+        # 커서 효과 추가 (▍)
+        placeholder.markdown(display_text + "▍") 
+        time.sleep(speed)
+    # 최종 출력 (커서 제거)
+    placeholder.markdown(display_text)
+    return display_text
 
 def bot_say(content, image=None, html=False):
     st.session_state.messages.append({"role": "assistant", "content": content, "image": image, "html": html})
@@ -121,7 +131,7 @@ def thinking_simulation():
     """AI Thinking Effect"""
     placeholder = st.empty()
     placeholder.markdown("<span class='thinking'>ANALYZING DATA PATTERNS...</span>", unsafe_allow_html=True)
-    time.sleep(1.2)
+    time.sleep(1.0)
     placeholder.empty()
 
 # ---------------------------------------
@@ -130,7 +140,7 @@ def thinking_simulation():
 
 # [Header: Minimal Text Only]
 st.markdown("<h3 style='margin-bottom:0;'>자연과한의원</h3>", unsafe_allow_html=True)
-st.markdown("<p style='font-size:12px; color:#555;'>Clinical Data Analysis System v3.1</p>", unsafe_allow_html=True)
+st.markdown("<p style='font-size:12px; color:#555;'>Clinical Data Analysis System v4.0 (Stable)</p>", unsafe_allow_html=True)
 st.divider()
 
 # [STEP 0: Init]
@@ -192,7 +202,8 @@ if prompt := st.chat_input("증상이나 답변을 입력하세요...") or st.se
         
         resp = "기본 데이터가 입력되었습니다.\n\n가장 핵심적인 질문입니다. **다이어트가 실패하는 주된 원인**은 무엇인가요?"
         with st.chat_message("assistant"):
-            st.write_stream(stream_text(resp))
+            # [교체] 끊김 없는 수동 타이핑 적용
+            type_writer(resp)
         bot_say(resp)
         st.session_state.step = 3 # Go to Chips Step
         st.rerun()
@@ -216,9 +227,11 @@ if prompt := st.chat_input("증상이나 답변을 입력하세요...") or st.se
         else: msg = "자율신경 문제입니다. 스트레스 호르몬이 지방 분해를 차단하고 있습니다."
         
         full_msg = f"{msg}\n\n마지막으로, **다이어트 약물 복용 경험**이 있으신가요?"
+        
         with st.chat_message("assistant"):
-            # [FIX] 단어 단위 스트리밍으로 끊김 해결
-            st.write_stream(stream_text(full_msg))
+            # [교체] 끊김 없는 수동 타이핑 적용
+            type_writer(full_msg)
+            
         bot_say(full_msg)
         st.session_state.step = 5
 
@@ -229,9 +242,9 @@ if prompt := st.chat_input("증상이나 답변을 입력하세요...") or st.se
         with st.chat_message("assistant"):
             placeholder = st.empty()
             placeholder.markdown("<span class='thinking'>COMPARING 200,000+ CLINICAL CASES...</span>", unsafe_allow_html=True)
-            time.sleep(1.5)
+            time.sleep(1.0)
             placeholder.markdown("<span class='thinking'>SIMULATING METABOLIC RESPONSE...</span>", unsafe_allow_html=True)
-            time.sleep(1.5)
+            time.sleep(1.0)
             placeholder.empty()
 
             # Result Generation
