@@ -1,92 +1,92 @@
 import streamlit as st
 import time
-import random
 import pandas as pd
 import numpy as np
+from datetime import datetime
 
 # ---------------------------------------
-# 0. 시스템 설정: 권위와 공포의 테마
+# 0. 시스템 설정: Brand Identity (Easy, Fast, Safe)
 # ---------------------------------------
 st.set_page_config(
-    page_title="자연과한의원 - AI 체질 정밀 분석",
-    page_icon="🧬",
+    page_title="자연과한의원 - 비대면 정밀 처방 시스템",
+    page_icon="🌿",
     layout="centered"
 )
 
-# CSS: 병원 수술실처럼 차갑고 전문적인 '메디컬 다크' 테마
+# CSS: 브랜드 컬러(Deep Green)와 신뢰감을 주는 'Medical Clean' 테마
 custom_css = """
 <style>
-    /* 전체 배경 및 폰트 */
+    /* 전체 폰트 및 배경 */
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+    
     .stApp {
-        background-color: #0E1117;
-        color: #FAFAFA;
+        background-color: #ffffff; /* Clean White for Trust */
+        color: #333333;
         font-family: 'Pretendard', sans-serif;
     }
     
     /* 헤더 스타일 */
-    h1, h2, h3 {
-        color: #4CAF50 !important; /* Medical Green */
-        font-weight: 800;
+    h1 {
+        color: #2E7D32 !important; /* Jayeon Green */
+        font-weight: 900;
+        text-align: center;
+        letter-spacing: -1px;
+    }
+    h2, h3 {
+        color: #1B5E20 !important;
+        font-weight: 700;
     }
     
-    /* 강조 텍스트 (위험) */
-    .warning-text {
-        color: #FF4B4B;
-        font-weight: bold;
-        font-size: 1.2rem;
-    }
-    
-    /* 강조 텍스트 (핵심) */
-    .highlight-text {
-        color: #4CAF50;
-        font-weight: bold;
-        font-size: 1.1rem;
-    }
-
-    /* 버튼 스타일 (권위적) */
-    .stButton>button {
-        width: 100%;
-        background-color: #4CAF50;
-        color: white;
-        font-weight: bold;
+    /* 강조 박스 (Info) */
+    .info-box {
+        background-color: #E8F5E9;
+        border-left: 5px solid #2E7D32;
         padding: 15px;
         border-radius: 5px;
-        border: none;
-    }
-    .stButton>button:hover {
-        background-color: #45a049;
+        margin-bottom: 20px;
     }
 
-    /* 박스 스타일 */
-    .diagnosis-box {
-        border: 2px solid #333;
-        background-color: #161B22;
-        padding: 20px;
-        border-radius: 10px;
+    /* 경고 박스 (Warning) */
+    .warning-box {
+        background-color: #FFEBEE;
+        border-left: 5px solid #C62828;
+        padding: 15px;
+        border-radius: 5px;
         margin-bottom: 20px;
     }
     
-    /* 거절 메시지 박스 */
-    .reject-box {
-        border: 2px solid #FF4B4B;
-        background-color: #2D0E0E;
+    /* 제품 카드 스타일 */
+    .product-card {
+        border: 2px solid #2E7D32;
+        border-radius: 15px;
         padding: 20px;
-        border-radius: 10px;
         text-align: center;
-        animation: pulse 2s infinite;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        background: linear-gradient(135deg, #ffffff 0%, #E8F5E9 100%);
     }
-    
-    @keyframes pulse {
-        0% { box-shadow: 0 0 0 0 rgba(255, 75, 75, 0.4); }
-        70% { box-shadow: 0 0 0 10px rgba(255, 75, 75, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(255, 75, 75, 0); }
+
+    /* 버튼 스타일 */
+    .stButton>button {
+        width: 100%;
+        background-color: #2E7D32;
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+        padding: 15px; 0;
+        border-radius: 8px;
+        border: none;
+        transition: all 0.3s;
+    }
+    .stButton>button:hover {
+        background-color: #1B5E20;
+        transform: scale(1.02);
     }
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
 
 # ---------------------------------------
-# 1. 상태 관리 (Session State)
+# 1. 상태 관리
 # ---------------------------------------
 if 'step' not in st.session_state:
     st.session_state.step = 0
@@ -97,135 +97,210 @@ if 'user_data' not in st.session_state:
 # 2. 메인 로직
 # ---------------------------------------
 
-# [Intro]
+# [Intro: 다이어트 자연주의 철학 설파]
 if st.session_state.step == 0:
-    st.image("https://placehold.co/600x200/000000/4CAF50?text=Nature+Clinic+AI+Diagnosis", use_column_width=True) # 로고 플레이스홀더
-    st.markdown("<h1 style='text-align: center;'>AI 비만 유형 정밀 진단</h1>", unsafe_allow_html=True)
-    st.markdown("---")
+    st.image("https://placehold.co/600x150/2E7D32/FFFFFF?text=JAYEON+HANBANG+UNTACT", use_column_width=True)
+    st.markdown("### 🌿 다이어트, 이제 '고통'이 아니라 '과학'입니다.")
     st.markdown("""
-    <div style='text-align: center; padding: 20px;'>
-        <p>본 시스템은 단순한 체중 감량이 아닌,<br>
-        <b>'살이 찌는 근본 원인(Root Cause)'</b>을 의학적으로 분석합니다.</p>
-        <p class='warning-text'>※ 경고: 분석 결과에 따라 처방이 거절될 수 있습니다.</p>
+    <div class='info-box'>
+        <b>"살을 빼는 과정이 왜 괴로워야 합니까?"</b><br>
+        자연과한의원은 인위적인 식욕 억제가 아닌, 
+        <b>신체 대사량을 자연스럽게 끌어올려</b> 
+        숨만 쉬어도 에너지가 타는 몸을 만듭니다.
     </div>
     """, unsafe_allow_html=True)
     
-    if st.button("정밀 진단 시작하기 (소요시간 1분)"):
+    st.markdown("#### ✅ 비대면 진료 프로세스 안내")
+    st.markdown("""
+    1. **AI 사전 문진**: 체질 및 내성(Tolerance) 분석
+    2. **한의사 1:1 전화**: 처방 단계(Step) 최종 확정
+    3. **익일 택배 발송**: '지방사약' 비대면 수령
+    """)
+    
+    if st.button("내 몸에 맞는 '처방 단계' 확인하기"):
         st.session_state.step = 1
         st.rerun()
 
-# [Phase 1: 생체 데이터 - The Baseline]
+# [Phase 1: 결핍의 스캔 - 대사 고장 진단]
 elif st.session_state.step == 1:
-    st.markdown("### 1. 기본 생체 데이터 분석")
-    st.progress(25)
-    
-    gender_cycle = st.radio(
-        "귀하의 현재 생애 주기는?",
-        ["남성 (복부/내장지방 집중형)", 
-         "여성 - 2030 미혼 (급속 감량 희망)", 
-         "여성 - 출산 후 (산후 비만/부종)", 
-         "여성 - 갱년기/완경 이후 (나잇살/호르몬성 비만)"]
-    )
+    st.markdown("## 01. 신체 대사 효율 측정")
+    st.markdown("단순히 체중이 문제가 아닙니다. **'왜 안 빠지는가'**를 분석합니다.")
     
     col1, col2 = st.columns(2)
     with col1:
         height = st.number_input("신장 (cm)", 140, 200, 160)
+        age = st.number_input("나이 (세)", 18, 70, 30)
     with col2:
-        weight = st.number_input("현재 체중 (kg)", 40, 150, 60)
-        
-    goal_weight = st.number_input("목표 체중 (kg)", 35, 100, 48)
-    
-    if st.button("다음 단계 >"):
+        weight = st.number_input("체중 (kg)", 40, 150, 60)
+        gender = st.selectbox("성별", ["여성", "남성"])
+
+    st.markdown("---")
+    st.markdown("**Q. 귀하의 다이어트가 매번 실패하는 근본 원인은?** (중복 선택 불가)")
+    cause = st.radio(
+        "가장 해당되는 항목을 하나만 선택하세요.",
+        [
+            "A. 식욕 통제 불가 (배불러도 계속 먹음) -> [위열]",
+            "B. 물만 먹어도 붓고 몸이 무거움 -> [수독/부종]",
+            "C. 식사량은 적은데 살이 안 빠짐 -> [대사 저하]",
+            "D. 스트레스 받으면 폭식 -> [간기 울결]"
+        ]
+    )
+
+    if st.button("다음: 내성 및 안전성 체크"):
         st.session_state.user_data.update({
-            'cycle': gender_cycle,
-            'height': height,
-            'weight': weight,
-            'goal': goal_weight
+            'height': height, 'weight': weight, 'age': age, 'gender': gender, 'cause': cause
         })
         st.session_state.step = 2
         st.rerun()
 
-# [Phase 2: 원인 규명 - The Trap]
+# [Phase 2: 리스크 관리 - 마황/카페인 내성 체크]
 elif st.session_state.step == 2:
-    st.markdown("### 2. 체질 및 원인 분석")
-    st.progress(50)
-    
-    cause = st.radio(
-        "Q. 귀하가 살이 찌는 가장 큰 원인은? (가장 공감되는 것)",
-        ["[식탐형] 배가 불러도 계속 들어간다. (위장 열독)",
-         "[부종형] 물만 먹어도 붓고, 저녁에 꽉 낀다. (순환 장애)",
-         "[스트레스형] 화가 나면 폭식한다. (간기 울결)",
-         "[대사저하형] 적게 먹어도 안 빠진다. (기초대사량 부족)"]
+    st.markdown("## 02. 약물 내성 및 민감도 테스트")
+    st.info("자연과한의원은 FDA 기준을 준수하며, 개인별 '최적 용량'을 찾기 위해 민감도를 체크합니다.")
+
+    caffeine = st.radio(
+        "Q. 평소 카페인(커피) 섭취 시 반응은?",
+        ["전혀 영향 없음 (하루 3잔 이상 가능)", 
+         "약간의 각성 효과 있음", 
+         "심장이 두근거리고 잠을 못 잠 (민감성)"]
     )
     
-    area = st.radio(
-        "Q. 가장 시급하게 해결해야 할 '저주받은 부위'는?",
-        ["[러브핸들] 바지 위로 튀어나오는 옆구리살",
-         "[ET배] 팔다리는 가는데 배만 뽈록 나온 내장지방",
-         "[승마살] 허벅지 안쪽과 엉덩이 밑살",
-         "[안녕살] 팔뚝이 쳐져서 반팔 입기가 두려움"]
+    history = st.radio(
+        "Q. 다이어트 양약/한약 복용 경험",
+        ["없음 (Pure Type)", 
+         "경험 있음 (약한 내성)", 
+         "장기 복용 및 효과 미비 (초고도 내성 - 지방사약 MAX 필요)"]
     )
     
-    if st.button("다음 단계 >"):
-        st.session_state.user_data.update({'cause': cause, 'area': area})
+    # [Targeted Boosters] 
+    st.markdown("**Q. 다이어트 중 특히 우려되는 증상이 있습니까? (보조 캡슐 매칭)**")
+    symptoms = st.multiselect(
+        "해당되는 증상을 모두 선택하세요.",
+        ["수면 장애/불면증 (수면킬 필요)", 
+         "심한 변비 (독소킬 필요)", 
+         "잦은 회식/음주 (지방킬 필요)", 
+         "해당 사항 없음"]
+    )
+
+    if st.button("AI 정밀 처방 결과 보기"):
+        st.session_state.user_data.update({
+            'caffeine': caffeine, 'history': history, 'symptoms': symptoms
+        })
         st.session_state.step = 3
         st.rerun()
 
-# [Phase 3: 자격 검증 - The Kick Out]
+# [Phase 3: 처방 및 구원 - 가격 정책 및 솔루션]
 elif st.session_state.step == 3:
-    st.markdown("### 3. 내성 및 처방 적합도 판정")
-    st.progress(75)
+    data = st.session_state.user_data
     
-    history = st.radio(
-        "Q. 다이어트 약물(양약/한약) 복용 경험",
-        ["없음 (순수 체질)",
-         "1~2회 경험 있음 (일반 내성)",
-         "수십 번 반복, 효과 없었음 (초고도 내성/정체기)"]
-    )
+    # 로딩: 권위 부여
+    msg_list = ["기초 대사량 분석 중...", "교감 신경 민감도 시뮬레이션...", "최적 처방 단계 매칭 중..."]
+    bar = st.progress(0)
+    status_text = st.empty()
     
-    if "수십 번" in history:
-        st.warning("⚠️ 경고: 초고도 내성이 의심됩니다. 일반 처방으로는 효과를 보기 어렵습니다.")
-
-    st.markdown("---")
-    st.markdown("**Q. 지방사약 처방 전, 귀하의 각오를 확인합니다.**")
-    willpower = st.radio(
-        "솔직하게 답변하십시오.",
-        ["운동/식단 병행하며 확실하게 뺄 것이다. (적합)",
-         "노력은 하겠지만, 약의 도움이 절실하다. (적합)",
-         "솔직히 아무 노력 없이 약만 먹고 빼고 싶다. (부적합)"]
-    )
+    for i, msg in enumerate(msg_list):
+        status_text.text(msg)
+        time.sleep(0.8)
+        bar.progress((i + 1) * 33)
     
-    if st.button("진단 결과 확인"):
-        # [KICK-OUT LOGIC] : 3번 선택 시 거절 처리
-        if "아무 노력 없이" in willpower:
-            st.session_state.step = 999 # 거절 페이지
-        else:
-            st.session_state.user_data.update({'history': history, 'willpower': willpower})
-            st.session_state.step = 4   # 결과 페이지
-        st.rerun()
-
-# [Phase 3-B: 거절 페이지 - The Rejection]
-elif st.session_state.step == 999:
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    st.markdown("""
-    <div class='reject-box'>
-        <h2 style='color: #FF4B4B;'>🚫 처방 불가 판정</h2>
-        <p>죄송합니다. 귀하의 답변을 분석한 결과,<br>
-        현재 단계에서는 <b>'지방사약'</b> 처방이 불가능합니다.</p>
-        <hr style='border-color: #555;'>
-        <p style='font-size: 0.9rem;'>
-        저희는 고객님의 돈보다 건강한 감량을 최우선으로 생각합니다.<br>
-        약물에만 의존하려는 상태에서는 요요현상이 100% 발생합니다.<br>
-        최소한의 식단 조절 의지가 생기셨을 때, 다시 방문해 주십시오.
-        </p>
+    # 분석 로직
+    is_max = "초고도 내성" in data['history']
+    drug_name = "지방사약 MAX" if is_max else "지방사약 (Standard)"
+    drug_level = "8단계 이상" if is_max else "3~5단계 (Standard)"
+    
+    # 진단명 매핑
+    diagnosis_title = "대사 기능 저하형 비만"
+    if "식욕" in data['cause']: diagnosis_title = "위열(Stomach Heat) 과다형 비만"
+    if "스트레스" in data['cause']: diagnosis_title = "스트레스성 간기 울결형 비만"
+    
+    # 결과 화면
+    st.markdown(f"## 📋 귀하의 비만 유형: [{diagnosis_title}]")
+    st.markdown(f"""
+    <div class='info-box'>
+        귀하는 일반적인 운동으로는 체지방 분해가 어려운 상태입니다.<br>
+        강제로 굶는 것이 아니라, <b>'대사 스위치'</b>를 켜야 합니다.
     </div>
     """, unsafe_allow_html=True)
     
-    if st.button("다시 솔직하게 진단받기"):
-        st.session_state.step = 3
-        st.rerun()
+    # 메인 처방 카드
+    st.markdown("### 💊 1:1 맞춤 처방 솔루션")
+    
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        st.image("https://placehold.co/400x400/2E7D32/FFFFFF?text=Jibang+Sayak", caption=drug_name)
+    with col2:
+        st.markdown(f"#### **{drug_name}**")
+        st.markdown(f"- **처방 강도**: {drug_level}")
+        st.markdown(f"- **핵심 기전**: {data['cause'].split('->')[1] if '->' in data['cause'] else '대사 촉진'} 집중 케어")
+        st.markdown("- **예상 반응**: 복용 30분 후 가벼운 열감과 심박수 증가 (운동 효과)")
+        
+        # 부스터 추천 (Upselling)
+        if data['symptoms'] and "해당" not in data['symptoms'][0]:
+            st.markdown("---")
+            st.markdown("**➕ 추가 처방 (Option)**")
+            for sym in data['symptoms']:
+                if "수면" in sym: st.markdown("- **수면킬**: 수면 중 대사 유지 및 불면 완화")
+                if "변비" in sym: st.markdown("- **독소킬**: 노폐물 배출 및 변비 해결")
+                if "회식" in sym: st.markdown("- **지방킬**: 탄수화물 컷팅 방어 기제")
 
-# [Phase 4: 결과 및 구원 - The Salvation]
-elif st.session_state.step == 4:
-    # 로딩 애니메이션 (분석하는 척)
-    with st.spinner("AI가 귀하의 생체 데이터를 분석 중입니다... (체질/대사량/감량예
+    # 가격 정책 (Volume Strategy)
+    st.markdown("---")
+    st.markdown("### 💰 합리적 비용 제안 (박리다매 정책)")
+    st.info("💡 '지방사약'은 장기 복용 시 할인율이 급격히 높아집니다.")
+    
+    # 가격 테이블 구성
+    price_html = """
+    <table style="width:100%; text-align:center; border-collapse: collapse;">
+      <tr style="background-color: #2E7D32; color: white;">
+        <th style="padding: 10px;">기간</th>
+        <th>정상가</th>
+        <th>할인가 (Event)</th>
+        <th>1일 비용</th>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">1개월</td>
+        <td style="border-bottom: 1px solid #ddd; text-decoration: line-through; color: #999;">180,000원</td>
+        <td style="border-bottom: 1px solid #ddd; font-weight: bold;">150,000원</td>
+        <td style="border-bottom: 1px solid #ddd;">5,000원</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #ddd;">3개월</td>
+        <td style="border-bottom: 1px solid #ddd; text-decoration: line-through; color: #999;">540,000원</td>
+        <td style="border-bottom: 1px solid #ddd; font-weight: bold; color: #C62828;">420,000원</td>
+        <td style="border-bottom: 1px solid #ddd;">4,600원</td>
+      </tr>
+      <tr style="background-color: #E8F5E9; font-weight: bold;">
+        <td style="padding: 10px;">6개월 (Best)</td>
+        <td style="text-decoration: line-through; color: #999;">1,260,000원</td>
+        <td style="color: #C62828;">621,000원</td>
+        <td>3,450원 ✨</td>
+      </tr>
+    </table>
+    """
+    st.markdown(price_html, unsafe_allow_html=True)
+    st.caption("※ 6개월 패키지 선택 시 커피 한 잔 값(3,450원)으로 관리가 가능합니다.")
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Call to Action
+    st.markdown("#### 🚀 지금 신청하면 '비대면 초진'이 가능합니다.")
+    
+    with st.form("lead_form"):
+        name = st.text_input("성함")
+        phone = st.text_input("연락처 (- 없이 입력)")
+        referral = st.text_input("추천인 코드 (선택: 10만 포인트 지급)")
+        
+        submit = st.form_submit_button("👨‍⚕️ 한의사 무료 상담 및 처방 신청")
+        
+        if submit:
+            if name and phone:
+                st.success(f"✅ {name}님, 접수가 완료되었습니다.")
+                st.markdown(f"""
+                <div class='info-box'>
+                    담당 한의사가 <b>{phone}</b>으로 10분 내에 연락드립니다.<br>
+                    비대면 진료 후, 오늘 오후에 택배가 발송됩니다.
+                </div>
+                """, unsafe_allow_html=True)
+                st.balloons()
+            else:
+                st.warning("성함과 연락처를 입력해주세요.")
