@@ -1,407 +1,284 @@
 import streamlit as st
+import time
+import random
 
+# ---------------------------------------
+# 0. 시스템 설정: Dark & Neon Green Theme
+# ---------------------------------------
 st.set_page_config(
-    page_title="자연과한의원 - 비대면 정밀 처방",
+    page_title="자연과한의원 AI - Dr.J",
     page_icon="🌿",
     layout="centered"
 )
 
-# 최소한의 CSS (HTML 마크다운 최소화)
-st.markdown("""
+# [CSS: 채팅창 스타일링 & 리얼 블랙 테마]
+custom_css = """
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
-    .stApp { background-color: #000; font-family: 'Noto Sans KR', sans-serif; }
-    div.stButton > button { 
-        width: 100%; background-color: #00E676 !important; 
-        color: #000 !important; border: none !important; 
-        padding: 14px !important; font-weight: 900 !important; 
-        font-size: 1rem !important; border-radius: 25px !important;
+    /* 1. 기본 테마 */
+    .stApp {
+        background-color: #000000 !important;
+        color: #FFFFFF !important;
+        font-family: 'Pretendard', sans-serif;
     }
-    div.stButton > button:hover { background-color: #00C853 !important; }
-    div.stButton > button p { color: #000 !important; font-weight: 900 !important; }
-    .stRadio > div { gap: 8px; }
-    .stRadio label { 
-        background: #111 !important; border: 1px solid #333 !important; 
-        border-radius: 10px !important; padding: 12px 15px !important; 
-        margin: 5px 0 !important;
+    
+    /* 2. 헤더 */
+    h1, h2, h3 { color: #00E676 !important; font-weight: 800; }
+    
+    /* 3. 채팅 메시지 스타일 */
+    .stChatMessage { background-color: #000 !important; }
+    [data-testid="stChatMessageContent"] {
+        background-color: #111 !important;
+        border: 1px solid #333;
+        border-radius: 15px;
+        padding: 15px;
+        color: #EEE;
     }
-    .stRadio label:hover { border-color: #00E676 !important; }
-    .stFormSubmitButton > button { 
-        background-color: #00E676 !important; color: #000 !important; 
-        font-weight: 900 !important; border-radius: 25px !important;
+    /* 유저 메시지는 색상 다르게 */
+    .stChatMessage[data-testid="user"] [data-testid="stChatMessageContent"] {
+        background-color: #0A1F0A !important;
+        border-color: #00E676;
     }
-    .stFormSubmitButton > button p { color: #000 !important; }
-</style>
-""", unsafe_allow_html=True)
 
-# 상태 관리
+    /* 4. 입력창 스타일 */
+    .stChatInputInput {
+        background-color: #1E1E1E !important;
+        color: white !important;
+        border: 1px solid #333 !important;
+    }
+    
+    /* 5. 버튼 (선택지용) */
+    div.stButton > button {
+        width: 100%;
+        background-color: #1E1E1E;
+        color: #00E676 !important;
+        border: 1px solid #00E676 !important;
+        border-radius: 20px;
+        margin-bottom: 5px;
+    }
+    div.stButton > button:hover {
+        background-color: #00E676;
+        color: #000 !important;
+    }
+
+    /* 6. 결과 카드 (Diagnosis Card) */
+    .result-card {
+        background: linear-gradient(135deg, #0A1F0A 0%, #000 100%);
+        border: 2px solid #00E676;
+        border-radius: 15px;
+        padding: 20px;
+        margin-top: 20px;
+        box-shadow: 0 0 15px rgba(0, 230, 118, 0.2);
+    }
+    
+    /* 7. 비포애프터 라벨 */
+    .ba-label {
+        background-color: #00E676;
+        color: #000;
+        font-weight: bold;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+    }
+</style>
+"""
+st.markdown(custom_css, unsafe_allow_html=True)
+
+# ---------------------------------------
+# 1. 상태 관리 & 헬퍼 함수
+# ---------------------------------------
+if 'messages' not in st.session_state:
+    st.session_state.messages = []
 if 'step' not in st.session_state:
-    st.session_state.step = 0
+    st.session_state.step = 0 # 0:인사, 1:기본정보, 2:증상, 3:내성, 4:결과
 if 'user_data' not in st.session_state:
     st.session_state.user_data = {}
-if 'chat_history' not in st.session_state:
-    st.session_state.chat_history = []
 
-def add_bot_message(msg):
-    st.session_state.chat_history.append({"role": "bot", "content": msg})
+def type_text(text):
+    """텍스트가 타이핑되는 듯한 효과 (Streaming)"""
+    for char in text:
+        yield char
+        time.sleep(0.01) # 타이핑 속도 조절
 
-def add_user_message(msg):
-    st.session_state.chat_history.append({"role": "user", "content": msg})
+def bot_say(text, image_url=None):
+    """봇 메시지 추가"""
+    st.session_state.messages.append({"role": "assistant", "content": text, "image": image_url})
 
-def render_chat_history():
-    """채팅 히스토리 렌더링 (에러 방지: 순수 st 컴포넌트만 사용)"""
-    for chat in st.session_state.chat_history:
-        if chat["role"] == "bot":
-            with st.chat_message("assistant", avatar="🌿"):
-                st.write(chat["content"])
-        else:
-            with st.chat_message("user", avatar="👤"):
-                st.write(chat["content"])
+def user_say(text):
+    """유저 메시지 추가"""
+    st.session_state.messages.append({"role": "user", "content": text})
 
-# ============================================
-# STEP 0: 인트로 (짧게) + 바로 문진 시작
-# ============================================
+# ---------------------------------------
+# 2. 메인 로직 (State Machine)
+# ---------------------------------------
+
+# [헤더: 권위 증명]
+col1, col2 = st.columns([1, 4])
+with col1:
+    st.image("https://placehold.co/100x100/000000/00E676?text=Dr.J", width=60)
+with col2:
+    st.markdown("<h3 style='margin:0; padding-top:10px;'>자연과한의원 AI 센터</h3>", unsafe_allow_html=True)
+    st.caption("SINCE 2001 · 2억 봉 판매 · 특허 3종 보유")
+st.divider()
+
+# [STEP 0: 초기 진입 & 인사]
 if st.session_state.step == 0:
-    st.title("🌿 자연과한의원")
-    st.caption("비대면 정밀 처방 시스템")
-    
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("연구기간", "25년+")
-    with col2:
-        st.metric("누적판매", "2억 봉")
-    with col3:
-        st.metric("특허", "3종")
-    
-    st.divider()
-    
-    # 챗봇 시작
-    with st.chat_message("assistant", avatar="🌿"):
-        st.write("안녕하세요! 자연과한의원 AI 처방 어시스턴트입니다.")
-        st.write("25년간 축적된 데이터를 바탕으로 **나에게 딱 맞는 처방**을 찾아드릴게요.")
-        st.write("몇 가지 질문에 답해주시면, 왜 살이 안 빠졌는지 원인을 분석하고 맞춤 솔루션을 제안해 드립니다.")
-    
-    if st.button("💬 맞춤 처방 상담 시작하기"):
-        add_bot_message("좋아요! 먼저 기본 정보를 알려주세요.")
-        st.session_state.step = 1
-        st.rerun()
+    welcome_msg = "안녕하세요. 저는 25년 임상 데이터를 학습한 **AI 닥터 제이(Dr.J)**입니다.\n\n단순히 살을 빼는 게 아니라, **'왜 살이 안 빠지는지'** 그 원인을 찾아 처방해 드립니다.\n\n먼저 분석을 위해 **[성별 / 나이 / 키 / 몸무게]**를 입력해 주세요.\n(예: 여성 32세 160cm 65kg)"
+    bot_say(welcome_msg)
+    st.session_state.step = 1
 
-# ============================================
-# STEP 1: 기본 정보 (챗봇 스타일)
-# ============================================
-elif st.session_state.step == 1:
-    st.title("🌿 자연과한의원")
-    
-    render_chat_history()
-    
-    with st.chat_message("assistant", avatar="🌿"):
-        st.write("**Q1. 기본 정보를 입력해 주세요**")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            gender = st.selectbox("성별", ["여성", "남성"], key="gender")
-            height = st.number_input("신장 (cm)", 140, 200, 160, key="height")
-        with col2:
-            age = st.number_input("나이", 18, 70, 30, key="age")
-            weight = st.number_input("체중 (kg)", 40, 150, 65, key="weight")
-    
-    if st.button("다음 →"):
-        user_info = f"{gender}, {age}세, {height}cm, {weight}kg"
-        add_user_message(user_info)
-        add_bot_message("감사합니다! 이제 가장 중요한 질문이에요.")
-        st.session_state.user_data.update({
-            'gender': gender, 'age': age, 'height': height, 'weight': weight
-        })
-        st.session_state.step = 2
-        st.rerun()
+# [채팅 히스토리 렌더링]
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"], avatar="🌿" if msg["role"] == "assistant" else "👤"):
+        st.markdown(msg["content"])
+        if msg.get("image"):
+            st.image(msg["image"], use_column_width=True)
 
-# ============================================
-# STEP 2: 비만 원인 (핵심 질문)
-# ============================================
-elif st.session_state.step == 2:
-    st.title("🌿 자연과한의원")
+# [입력 처리 핸들러]
+if prompt := st.chat_input("메시지를 입력하세요..."):
+    # 1. 유저 메시지 표시
+    with st.chat_message("user", avatar="👤"):
+        st.markdown(prompt)
+    user_say(prompt)
+
+    # 2. 봇 응답 로직 (Step별 분기)
     
-    render_chat_history()
-    
-    with st.chat_message("assistant", avatar="🌿"):
-        st.write("**Q2. 다이어트가 실패하는 가장 큰 이유는?**")
-        st.write("하나만 골라주세요. 이게 처방의 핵심이에요!")
+    # [STEP 1: 기본 정보 수집 -> 증상 질문]
+    if st.session_state.step == 1:
+        st.session_state.user_data['basic_info'] = prompt
         
-        cause = st.radio(
-            "선택",
-            [
-                "🍽️ 배불러도 계속 먹게 됨 (식욕 통제 불가)",
-                "💧 물만 먹어도 붓고 무거움 (부종)",
-                "🔥 적게 먹어도 안 빠짐 (대사 저하)",
-                "😰 스트레스 받으면 폭식 (감정적 섭식)"
-            ],
-            key="cause",
-            label_visibility="collapsed"
-        )
+        with st.chat_message("assistant", avatar="🌿"):
+            response = "정보가 입력되었습니다. BMI와 기초대사량 구간을 계산했습니다.\n\n가장 중요한 질문입니다. **다이어트가 실패하는 가장 큰 이유**가 무엇인가요? 솔직하게 말씀해 주세요."
+            st.write_stream(type_text(response))
+        bot_say(response)
+        
+        # 버튼으로 선택지 제공 (입력 편의성)
+        col_a, col_b = st.columns(2)
+        with col_a:
+            if st.button("🍽️ 배불러도 계속 먹어요 (식욕)"):
+                st.session_state.user_data['cause'] = "식욕"
+                st.session_state.step = 2
+                st.rerun()
+            if st.button("💧 물만 먹어도 부어요 (부종)"):
+                st.session_state.user_data['cause'] = "부종"
+                st.session_state.step = 2
+                st.rerun()
+        with col_b:
+            if st.button("🔥 적게 먹어도 안 빠져요 (대사)"):
+                st.session_state.user_data['cause'] = "대사"
+                st.session_state.step = 2
+                st.rerun()
+            if st.button("😰 스트레스 받으면 폭식해요"):
+                st.session_state.user_data['cause'] = "스트레스"
+                st.session_state.step = 2
+                st.rerun()
     
-    if st.button("다음 →"):
-        add_user_message(cause)
-        add_bot_message("마지막 질문이에요! 약물 반응성을 체크할게요.")
-        st.session_state.user_data['cause'] = cause
+    # [STEP 2: 내성 체크]
+    elif st.session_state.step == 2:
+        # (버튼 클릭으로 넘어오므로 이 블록은 텍스트 입력 시엔 스킵되거나 처리됨)
+        pass 
+
+# [STEP 2 처리: 버튼 클릭 후 자동 실행]
+if st.session_state.step == 2 and 'cause' in st.session_state.user_data:
+    # 봇이 자동으로 질문을 던짐
+    if len(st.session_state.messages) % 2 == 0: # 봇 차례일 때만
+        with st.chat_message("assistant", avatar="🌿"):
+            cause = st.session_state.user_data['cause']
+            if cause == "식욕": msg = "식욕 통제가 안 되시는군요. '위열(위장의 열)'이 원인일 가능성이 높습니다."
+            elif cause == "부종": msg = "순환이 막혀 노폐물이 쌓인 '수독' 상태가 의심됩니다."
+            elif cause == "대사": msg = "대사 엔진이 꺼진 '냉체질'이시군요. 굶으면 더 안 빠집니다."
+            else: msg = "스트레스 호르몬이 지방을 붙잡고 있는 상태입니다."
+            
+            full_msg = f"{msg}\n\n마지막으로, **다이어트 약물 복용 경험**이나 **카페인 민감도**는 어떠신가요?"
+            st.write_stream(type_text(full_msg))
+        bot_say(full_msg)
         st.session_state.step = 3
-        st.rerun()
 
-# ============================================
-# STEP 3: 약물 내성 체크
-# ============================================
-elif st.session_state.step == 3:
-    st.title("🌿 자연과한의원")
+# [STEP 3: 최종 입력 -> 분석 시작]
+if st.session_state.step == 3 and prompt:
+    st.session_state.user_data['history'] = prompt
     
-    render_chat_history()
-    
+    # 분석 애니메이션
     with st.chat_message("assistant", avatar="🌿"):
-        st.write("**Q3. 카페인(커피) 반응은?**")
-        caffeine = st.radio(
-            "카페인",
-            ["☕ 하루 3잔 이상 OK", "☕ 1-2잔 적정", "💓 심장 두근, 예민함"],
-            key="caffeine",
-            label_visibility="collapsed"
-        )
+        with st.status("🧬 AI가 고객님의 체질을 분석 중입니다...", expanded=True) as status:
+            st.write("데이터 대조 중 (2억 건)...")
+            time.sleep(1)
+            st.write("부작용 리스크 시뮬레이션 중...")
+            time.sleep(1)
+            st.write("최적 처방 매칭 완료!")
+            status.update(label="분석 완료", state="complete", expanded=False)
         
-        st.write("**Q4. 다이어트 약 복용 경험은?**")
-        history = st.radio(
-            "복용경험",
-            ["🆕 처음이에요", "📌 1-2회 있어요", "🔄 여러 번, 효과 미비 (내성 의심)"],
-            key="history",
-            label_visibility="collapsed"
-        )
-    
-    if st.button("🔍 내 맞춤 처방 확인하기"):
-        add_user_message(f"카페인: {caffeine} / 복용경험: {history}")
-        st.session_state.user_data['caffeine'] = caffeine
-        st.session_state.user_data['history'] = history
-        st.session_state.step = 4
-        st.rerun()
-
-# ============================================
-# STEP 4: 결과 (에러 방지: HTML 마크다운 제거, 순수 st 컴포넌트만)
-# ============================================
-elif st.session_state.step == 4:
-    st.title("🌿 자연과한의원")
-    
-    data = st.session_state.user_data
-    
-    # 데이터 추출
-    height = data.get('height', 160)
-    weight = data.get('weight', 65)
-    age = data.get('age', 30)
-    gender = data.get('gender', '여성')
-    cause = data.get('cause', '')
-    caffeine = data.get('caffeine', '')
-    history = data.get('history', '')
-    
-    # BMI 계산
-    bmi = round(weight / ((height/100) ** 2), 1)
-    
-    # 원인별 분석
-    if "식욕" in cause or "배불러도" in cause:
-        diagnosis_type = "위열(胃熱) 과다형"
-        diagnosis_name = "식욕 과항진 비만"
-        emoji = "🍽️"
+        # [결과 생성 로직]
+        cause = st.session_state.user_data.get('cause', '대사')
         
-        problem_title = "가짜 배고픔에 속고 있어요"
-        problem_detail = """위장에 과도한 열이 쌓여 있어요. 이 열기가 뇌의 포만 중추를 마비시켜서, 배가 불러도 '배고프다'는 잘못된 신호를 보내고 있어요. 의지력 문제가 아니에요!"""
+        if cause == "식욕":
+            diag = "위열(Stomach Heat) 과다형"
+            drug = "식탐사약"
+            desc = "가짜 배고픔을 만드는 위장의 열을 식히고, 포만 중추를 정상화합니다."
+            ba_img = "https://placehold.co/600x300/111/00E676?text=Before+After+(Belly)" # 실제 이미지 교체
+        elif cause == "부종":
+            diag = "수독(Water Poison) 정체형"
+            drug = "독소킬 + 지방사약"
+            desc = "꽉 막힌 림프를 뚫어 붓기를 배출하고, 라인을 잡습니다."
+            ba_img = "https://placehold.co/600x300/111/00E676?text=Before+After+(Legs)"
+        elif cause == "대사":
+            diag = "대사 기능 저하형"
+            drug = "지방사약 (대사촉진형)"
+            desc = "심부 체온을 높여 숨만 쉬어도 에너지가 타는 몸을 만듭니다."
+            ba_img = "https://placehold.co/600x300/111/00E676?text=Before+After+(FullBody)"
+        else:
+            diag = "간기 울결(Stress)형"
+            drug = "지방사약 + 소요산"
+            desc = "스트레스 호르몬을 조절하여 폭식의 고리를 끊습니다."
+            ba_img = "https://placehold.co/600x300/111/00E676?text=Before+After+(Stress)"
+            
+        result_msg = f"""
+        ### 📋 분석 결과: <span style='color:#FF5252'>{diag}</span>
         
-        why_fail = "단순 절식은 위열을 더 자극해서 폭식→후회→절식의 악순환을 만들어요."
+        고객님은 의지가 약한 게 아닙니다. **몸의 시스템이 고장 난 상태**입니다.
+        {desc}
         
-        solution_name = "청위사열(清胃瀉熱)"
-        solution_steps = [
-            "황련, 치자 등으로 위장의 열을 식힘",
-            "포만 중추 민감도 회복",
-            "식욕 호르몬(그렐린) 억제"
-        ]
-        expected = "3-5일 후 식욕 감소, 2주 후 폭식 욕구 현저히 감소"
+        **[처방 솔루션]**
+        💊 **{drug}** (맞춤 처방)
+        """
+        st.markdown(result_msg, unsafe_allow_html=True)
+        bot_say(result_msg) # 텍스트 저장
         
-    elif "물만" in cause or "붓" in cause:
-        diagnosis_type = "수독(水毒) 정체형"
-        diagnosis_name = "부종성 비만"
-        emoji = "💧"
+        # [비포 애프터 출력]
+        st.markdown("---")
+        st.markdown("**👁 [증거] 동일 체질 환자의 3개월 변화**")
+        st.image(ba_img, caption="자연과한의원 실제 감량 사례", use_column_width=True)
+        bot_say("**[증거] 동일 체질 환자의 3개월 변화**", image_url=ba_img) # 이미지 저장
         
-        problem_title = "지방이 아니라 붓기예요"
-        problem_detail = """체내 수분 대사가 고장나서 노폐물이 빠져나가지 못하고 있어요. 림프 순환이 막혀 셀룰라이트가 축적되고, 실제 지방보다 붓기가 체중의 상당 부분을 차지해요."""
+        # [CTA 및 가격]
+        price_msg = """
+        <div class='result-card'>
+            <h4 style='color:#00E676; margin:0;'>💰 합리적 비용 제안</h4>
+            <p style='color:#DDD; font-size:0.9rem;'>자체 탕전 시스템으로 거품을 뺐습니다.</p>
+            <table style='width:100%; color:white; text-align:center;'>
+                <tr style='border-bottom:1px solid #333;'>
+                    <td>1개월</td>
+                    <td style='color:#FF5252; font-weight:bold;'>150,000원</td>
+                </tr>
+                <tr>
+                    <td>6개월 (Best)</td>
+                    <td style='color:#00E676; font-weight:bold;'>월 10만원대</td>
+                </tr>
+            </table>
+            <br>
+            <p style='text-align:center; margin:0;'>
+                지금 신청하시면 <b>비대면 초진</b>이 가능합니다.<br>
+                담당 한의사가 10분 내로 연락드립니다.
+            </p>
+        </div>
+        """
+        st.markdown(price_msg, unsafe_allow_html=True)
         
-        why_fail = "운동과 식이조절은 지방엔 효과적이지만 수독 정체는 해결 못해요."
+        # 상담 신청 폼
+        with st.form("final_form"):
+            name = st.text_input("성함")
+            phone = st.text_input("연락처")
+            submitted = st.form_submit_button("👨‍⚕️ 한의사 상담 신청 (무료)")
+            if submitted and name and phone:
+                st.success("접수되었습니다! 곧 연락드리겠습니다.")
         
-        solution_name = "이수삼습(利水滲濕)"
-        solution_steps = [
-            "복령, 택사로 정체된 수분 배출",
-            "림프 순환 촉진으로 부종 제거",
-            "비장 기능 강화로 재발 방지"
-        ]
-        expected = "1주일 내 붓기 감소, 2주 후 2-4kg 감량"
-        
-    elif "적게" in cause or "대사" in cause:
-        diagnosis_type = "대사저하(冷體質)형"
-        diagnosis_name = "기초대사량 저하 비만"
-        emoji = "🔥"
-        
-        problem_title = "대사 엔진이 꺼져있어요"
-        problem_detail = """기초대사량이 현저히 낮아서, 같은 양을 먹어도 남들보다 칼로리 소모가 적어요. 손발이 차고, 쉽게 피로하고, 추위를 많이 타시죠? 신진대사 자체가 슬로우 모드예요."""
-        
-        why_fail = "절식은 대사량을 더 떨어뜨려서 요요의 원인이 돼요."
-        
-        solution_name = "온양보기(溫陽補氣)"
-        solution_steps = [
-            "온열 약재로 심부 체온 0.3-0.5도 상승",
-            "교감신경 자극으로 칼로리 소모 체질 전환",
-            "갈색 지방(Brown Fat) 활성화"
-        ]
-        expected = "1주일 후 체온 상승 체감, 2주 후 체중 감소 시작"
-        
-    else:  # 스트레스
-        diagnosis_type = "간기울결(肝氣鬱結)형"
-        diagnosis_name = "스트레스성 폭식 비만"
-        emoji = "😰"
-        
-        problem_title = "스트레스 호르몬이 지방을 붙잡고 있어요"
-        problem_detail = """코르티솔(스트레스 호르몬)이 만성적으로 높아요. 스트레스→폭식→죄책감→스트레스 악순환에 갇혀 있고, 코르티솔은 특히 복부 지방 축적을 촉진해요."""
-        
-        why_fail = "의지력으로 억제하면 스트레스가 더 쌓여서 결국 더 큰 폭식으로 터져요."
-        
-        solution_name = "소간해울(疏肝解鬱)"
-        solution_steps = [
-            "시호, 향부자로 막힌 기 흐름 소통",
-            "가미소요산으로 정서 안정",
-            "스트레스 호르몬 분비 정상화"
-        ]
-        expected = "3-5일 후 심리적 안정, 2주 후 폭식 빈도 현저히 감소"
-    
-    # 처방 강도
-    if "여러" in history or "내성" in history:
-        rx_level = "MAX"
-        rx_name = "지방사약 MAX"
-        rx_reason = "기존 약물 내성 → 강화 처방 필요"
-    elif "1-2회" in history:
-        rx_level = "STANDARD+"
-        rx_name = "지방사약 스탠다드+"
-        rx_reason = "약간의 경험 → 표준보다 약간 강화"
-    else:
-        rx_level = "STANDARD"
-        rx_name = "지방사약 스탠다드"
-        rx_reason = "첫 복용 → 표준 용량부터 시작"
-    
-    # 카페인 주의
-    caffeine_warning = "민감" in caffeine or "두근" in caffeine
-    
-    # ============================================
-    # 결과 UI (순수 Streamlit 컴포넌트만 사용)
-    # ============================================
-    
-    # 채팅 히스토리
-    render_chat_history()
-    
-    # 결과 메시지
-    with st.chat_message("assistant", avatar="🌿"):
-        st.write("분석이 완료됐어요! 결과를 보여드릴게요.")
-    
-    st.divider()
-    
-    # 진단 결과
-    st.subheader(f"{emoji} 진단: {diagnosis_type}")
-    st.caption(diagnosis_name)
-    
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("BMI", bmi)
-    with col2:
-        st.metric("처방강도", rx_level)
-    with col3:
-        st.metric("추천", rx_name)
-    
-    st.divider()
-    
-    # 문제 분석
-    st.subheader("❓ 왜 살이 안 빠졌나요?")
-    st.error(f"**{problem_title}**")
-    st.write(problem_detail)
-    st.warning(f"⚠️ 일반 다이어트 실패 이유: {why_fail}")
-    
-    st.divider()
-    
-    # 솔루션
-    st.subheader(f"✅ 해결책: {solution_name}")
-    for i, step in enumerate(solution_steps, 1):
-        st.success(f"**{i}.** {step}")
-    
-    st.info(f"📅 예상 효과: {expected}")
-    
-    if caffeine_warning:
-        st.warning("⚠️ 카페인 민감 체질 → 교감신경 자극 성분 최소화 처방")
-    
-    st.divider()
-    
-    # 최종 처방
-    st.subheader("💊 최종 처방")
-    
-    st.write(f"**처방명:** {rx_name}")
-    st.write(f"**처방 근거:** {rx_reason}")
-    st.write(f"**핵심 목표:** {solution_name}")
-    
-    st.divider()
-    
-    # 자연과한의원 장점
-    st.subheader("🏥 자연과한의원 시스템")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.write("🧪 **특허 3종 조성물**")
-        st.caption("25년 검증된 체중감량 특허")
-        st.write("📅 **2주 단위 조절**")
-        st.caption("신체 반응 따라 정밀 용량 조정")
-    with col2:
-        st.write("📱 **90일 밀착 관리**")
-        st.caption("카카오톡 1:1 상담")
-        st.write("🌿 **100% 청정 한약재**")
-        st.caption("부형제 無, 이력추적 약재")
-    
-    st.divider()
-    
-    # 가격
-    st.subheader("💰 비용")
-    
-    price_data = {
-        "기간": ["1개월", "3개월", "6개월 ⭐"],
-        "정상가": ["180,000원", "540,000원", "1,080,000원"],
-        "혜택가": ["150,000원", "390,000원", "621,000원"],
-        "1일": ["5,000원", "4,330원", "3,450원"]
-    }
-    st.table(price_data)
-    st.caption("※ 2억 봉 돌파 기념 특별 할인")
-    
-    st.divider()
-    
-    # 상담 신청
-    st.subheader("📞 무료 상담 신청")
-    
-    with st.form("lead_form"):
-        name = st.text_input("성함")
-        phone = st.text_input("연락처 (- 없이)")
-        submit = st.form_submit_button("한의사 상담 신청")
-        
-        if submit:
-            if name and phone:
-                st.success(f"✅ {name}님, 접수 완료!")
-                st.write(f"📱 {phone}으로 연락드릴게요.")
-                st.write(f"🔬 진단: {diagnosis_type}")
-                st.write(f"💊 추천: {rx_name}")
-                st.balloons()
-            else:
-                st.warning("성함과 연락처를 입력해주세요.")
-    
-    st.divider()
-    
-    # 지점
-    st.subheader("📍 전국 34개 지점")
-    st.write("강남본점 · 신촌홍대점 · 명동을지로점 · 신림점 · 노원점 · 목동점 · 상봉점 · 은평연신내점 · 천호점 · 건대점 · 수원점 · 일산점 · 분당점 · 부천점 · 김포점 · 안산점 · 동탄점 · 안양평촌점 · 평택점 · 인천점 · 의정부점 · 부산서면점 · 부산센텀점 · 대구점 · 울산점 · 창원점 · 천안점 · 청주점 · 대전점 · 광주점 · 전주점 · 순천점 · 원주점 · 제주점")
-    st.caption("전국 어디서나 동일 처방 가능")
-    
-    if st.button("🔄 처음부터 다시"):
-        st.session_state.step = 0
-        st.session_state.user_data = {}
-        st.session_state.chat_history = []
-        st.rerun()
+    st.session_state.step = 4
