@@ -104,10 +104,11 @@ if 'user_data' not in st.session_state:
     st.session_state.user_data = {}
 
 def stream_text(text):
-    """Gemini-like smooth streaming"""
-    for char in text:
-        yield char
-        time.sleep(0.015)
+    """Gemini-like smooth streaming (Word based to prevent markdown break)"""
+    # 글자가 아닌 단어 단위로 쪼개서 전송 (한글 깨짐/마크다운 오류 방지)
+    for word in text.split(" "):
+        yield word + " "
+        time.sleep(0.02) # 속도: 0.02초 (너무 느리면 답답함)
 
 def bot_say(content, image=None, html=False):
     st.session_state.messages.append({"role": "assistant", "content": content, "image": image, "html": html})
