@@ -1,5 +1,6 @@
 import streamlit as st
 import time
+import random
 
 # ---------------------------------------
 # 0. 시스템 설정: Minimal Black Theme
@@ -103,12 +104,12 @@ if 'step' not in st.session_state:
 if 'user_data' not in st.session_state:
     st.session_state.user_data = {}
 
+# [FIX] 끊김 방지를 위한 단어 단위 스트리밍
 def stream_text(text):
-    """Gemini-like smooth streaming (Word based to prevent markdown break)"""
-    # 글자가 아닌 단어 단위로 쪼개서 전송 (한글 깨짐/마크다운 오류 방지)
+    """Gemini-like smooth streaming (Word based)"""
     for word in text.split(" "):
         yield word + " "
-        time.sleep(0.02) # 속도: 0.02초 (너무 느리면 답답함)
+        time.sleep(0.05) # 속도 조절
 
 def bot_say(content, image=None, html=False):
     st.session_state.messages.append({"role": "assistant", "content": content, "image": image, "html": html})
@@ -129,7 +130,7 @@ def thinking_simulation():
 
 # [Header: Minimal Text Only]
 st.markdown("<h3 style='margin-bottom:0;'>자연과한의원</h3>", unsafe_allow_html=True)
-st.markdown("<p style='font-size:12px; color:#555;'>Clinical Data Analysis System v3.0</p>", unsafe_allow_html=True)
+st.markdown("<p style='font-size:12px; color:#555;'>Clinical Data Analysis System v3.1</p>", unsafe_allow_html=True)
 st.divider()
 
 # [STEP 0: Init]
@@ -216,6 +217,7 @@ if prompt := st.chat_input("증상이나 답변을 입력하세요...") or st.se
         
         full_msg = f"{msg}\n\n마지막으로, **다이어트 약물 복용 경험**이 있으신가요?"
         with st.chat_message("assistant"):
+            # [FIX] 단어 단위 스트리밍으로 끊김 해결
             st.write_stream(stream_text(full_msg))
         bot_say(full_msg)
         st.session_state.step = 5
@@ -241,25 +243,25 @@ if prompt := st.chat_input("증상이나 답변을 입력하세요...") or st.se
                 desc = "뇌가 포만감을 느끼지 못하는 '가짜 배고픔' 상태"
                 rx = "식탐사약"
                 rx_sub = "식욕 억제 및 위장 열 해소"
-                img = "https://placehold.co/800x400/111/333?text=BEFORE+vs+AFTER" 
+                img = "https://placehold.co/800x400/111/333?text=BEFORE+vs+AFTER+(BELLY)" 
             elif cause == "부종":
                 title = "수독 정체형 (Water Retention)"
                 desc = "노폐물이 배출되지 못하고 지방과 엉겨 붙은 상태"
                 rx = "독소킬 + 지방사약"
                 rx_sub = "수분 대사 촉진 및 붓기 배출"
-                img = "https://placehold.co/800x400/111/333?text=BEFORE+vs+AFTER"
+                img = "https://placehold.co/800x400/111/333?text=BEFORE+vs+AFTER+(BODY)"
             elif cause == "대사":
                 title = "대사 저하형 (Metabolic Drop)"
                 desc = "기초대사량이 낮아 숨만 쉬어도 손해보는 체질"
                 rx = "지방사약 (대사촉진형)"
                 rx_sub = "심부 체온 상승 및 발열 효과 유도"
-                img = "https://placehold.co/800x400/111/333?text=BEFORE+vs+AFTER"
+                img = "https://placehold.co/800x400/111/333?text=BEFORE+vs+AFTER+(FULLBODY)"
             else:
                 title = "간기 울결형 (Stress Induced)"
                 desc = "스트레스 호르몬(코르티솔)에 의한 복부 지방 축적"
                 rx = "소요산 + 지방사약"
                 rx_sub = "자율신경 안정 및 폭식 차단"
-                img = "https://placehold.co/800x400/111/333?text=BEFORE+vs+AFTER"
+                img = "https://placehold.co/800x400/111/333?text=BEFORE+vs+AFTER+(STRESS)"
 
             # Editorial Layout (HTML)
             result_html = f"""
