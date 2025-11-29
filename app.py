@@ -10,7 +10,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# [CSS 수정: 검은색 텍스트 강제 적용 및 가독성 확보]
+# [CSS 수정: 버튼 텍스트 강제 블랙 & 안정성 확보]
 custom_css = """
 <style>
     /* 1. 메인 배경 및 기본 폰트 (화이트) */
@@ -42,11 +42,11 @@ custom_css = """
         border: 1px solid #333;
     }
     
-    /* 5. [수정] 권위 뱃지 (형광 배경 + 검은 글씨) */
+    /* 5. 권위 뱃지 (형광 배경 + 검은 글씨) */
     .auth-badge {
         display: inline-block;
         background-color: #00E676;
-        color: #000000 !important; /* 리얼 블랙 강제 */
+        color: #000000 !important;
         font-weight: 900;
         padding: 4px 10px;
         border-radius: 4px;
@@ -65,25 +65,26 @@ custom_css = """
         text-align: center;
     }
 
-    /* 7. [수정] 버튼 스타일 (형광 배경 + 검은 글씨) */
-    .stButton>button {
+    /* 7. [강력 수정] 버튼 스타일 (모든 하위 요소까지 강제 블랙) */
+    div.stButton > button {
         width: 100%;
-        background-color: #00E676;
-        color: #000000 !important; /* 리얼 블랙 강제 */
-        font-size: 19px;
-        font-weight: 900;
-        padding: 16px 0;
-        border-radius: 8px;
-        border: none;
-        margin-top: 15px;
+        background-color: #00E676 !important;
+        border: none !important;
+        padding: 16px 0 !important;
+        margin-top: 15px !important;
     }
-    .stButton>button:hover {
-        background-color: #00C853;
-        color: #000000 !important;
+    /* 버튼 내부 텍스트 색상 강제 변경 (중요) */
+    div.stButton > button p {
+        color: #000000 !important; 
+        font-size: 19px !important;
+        font-weight: 900 !important;
+    }
+    div.stButton > button:hover {
+        background-color: #00C853 !important;
         transform: scale(1.01);
     }
     
-    /* 8. 분석 리포트 박스 (New) */
+    /* 8. 분석 리포트 박스 */
     .report-box {
         background-color: #111;
         border-left: 4px solid #00E676;
@@ -110,7 +111,7 @@ custom_css = """
     }
     .price-table th {
         background-color: #00E676;
-        color: #000000 !important; /* 헤더 검은 글씨 */
+        color: #000000 !important;
         padding: 12px;
         font-weight: bold;
     }
@@ -119,10 +120,6 @@ custom_css = """
         padding: 12px;
         border-bottom: 1px solid #333;
         color: #FFFFFF !important;
-    }
-    .price-best {
-        background-color: #051405 !important;
-        border: 2px solid #00E676;
     }
 </style>
 """
@@ -142,12 +139,13 @@ if 'user_data' not in st.session_state:
 
 # [Intro: Authority & Trust]
 if st.session_state.step == 0:
-    # 한글 로고 이미지 (placeholder 텍스트 변경)
-    st.image("https://placehold.co/600x120/000000/00E676?text=%EC%9E%90%EC%97%B0%EA%B3%BC%ED%95%9C%EC%9D%98%EC%9B%90&font=roboto", use_column_width=True)
+    # [수정] 이미지 대신 텍스트 로고로 대체 (사라짐 방지)
+    st.markdown("<h1 style='text-align: center; font-size: 3rem; margin-bottom: 0;'>자연과한의원</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #00E676 !important; font-weight: bold;'>JAYEON HANBANG CLINIC</p>", unsafe_allow_html=True)
     
-    st.markdown("<h1 style='text-align: center; font-size: 1.8rem;'>25년 데이터 기반 정밀 처방</h1>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; font-size: 1.5rem; margin-top: 20px;'>25년 데이터 기반 정밀 처방</h2>", unsafe_allow_html=True)
     
-    # [권위 증명 섹션 - 가독성 수정]
+    # [권위 증명 섹션]
     st.markdown("""
     <div class='auth-box'>
         <div style='margin-bottom:15px;'>
@@ -186,7 +184,6 @@ elif st.session_state.step == 1:
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("**Q. 귀하의 다이어트가 매번 실패하는 근본 원인은?**")
     
-    # 원인별 키워드 매핑을 위해 key 값을 명확히 분리
     cause_options = [
         "A. 식욕 통제 불가 (배불러도 계속 먹음)",
         "B. 물만 먹어도 붓고 몸이 무거움",
@@ -239,11 +236,11 @@ elif st.session_state.step == 2:
 
 # [Phase 3: 처방 및 상세 리포트]
 elif st.session_state.step == 3:
-    data = st.session_state.user_data
+    # [CRITICAL FIX] Spinner 제거 -> removeChild 에러 원천 차단
+    # 대신 잠시 딜레이만 주거나, 바로 렌더링
+    time.sleep(0.5) 
     
-    # 스피너
-    with st.spinner("AI가 25년 임상 데이터를 기반으로 최적 처방을 매칭 중입니다..."):
-        time.sleep(1.5)
+    data = st.session_state.user_data
     
     # ----------------------------------------------------
     # [Logic Engine] 상세 분석 내용 생성
@@ -333,11 +330,9 @@ elif st.session_state.step == 3:
     col_b, col_a = st.columns(2)
     with col_b:
         st.markdown("<div style='color:#00E676; font-weight:bold; text-align:center;'>BEFORE (78kg)</div>", unsafe_allow_html=True)
-        # 이미지 placeholder
         st.image("https://placehold.co/300x400/333333/FFFFFF?text=BEFORE", use_column_width=True)
     with col_a:
         st.markdown("<div style='color:#00E676; font-weight:bold; text-align:center;'>AFTER (58kg)</div>", unsafe_allow_html=True)
-        # 이미지 placeholder
         st.image("https://placehold.co/300x400/00E676/000000?text=AFTER", use_column_width=True)
 
     # 가격 정책
