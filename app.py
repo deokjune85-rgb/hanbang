@@ -10,7 +10,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# CSS
 custom_css = """
 <style>
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
@@ -162,7 +161,6 @@ custom_css = """
 """
 st.markdown(custom_css, unsafe_allow_html=True)
 
-# STATE
 if 'messages' not in st.session_state:
     st.session_state.messages = []
 if 'step' not in st.session_state:
@@ -173,31 +171,12 @@ if 'user_data' not in st.session_state:
 AI_AVATAR = "🔷"
 USER_AVATAR = "👤"
 
-# FUNCTIONS
-def stream_text(text, speed=0.008):
-    """Smoother streaming with complete text guarantee"""
-    placeholder = st.empty()
-    display = ""
-    
-    # Stream in chunks for better performance
-    chunk_size = 3
-    for i in range(0, len(text), chunk_size):
-        chunk = text[i:i+chunk_size]
-        display += chunk
-        placeholder.markdown(display)
-        time.sleep(speed)
-    
-    # Ensure final complete text is displayed
-    placeholder.markdown(text)
-    return text
-
-def add_msg(role, content, html=False, chart=None, animated=False):
+def add_msg(role, content, html=False, chart=None):
     st.session_state.messages.append({
         "role": role,
         "content": content,
         "html": html,
-        "chart": chart,
-        "animated": animated
+        "chart": chart
     })
 
 def create_radar_chart(scores):
@@ -236,12 +215,10 @@ def create_radar_chart(scores):
     
     return fig
 
-# HEADER
 st.markdown("<h2 style='text-align:center; color:#00FF00; font-weight:900; margin-bottom:5px;'>자연과한의원 AI 진단센터</h2>", unsafe_allow_html=True)
 st.markdown("<p style='text-align:center; font-size:12px; color:#666; margin-bottom:30px;'>25년 임상 데이터 기반 / 24시간 무료 진단</p>", unsafe_allow_html=True)
 st.divider()
 
-# INIT
 if st.session_state.step == 0:
     init = """안녕하세요, 자연과한의원입니다.
 
@@ -262,40 +239,23 @@ if st.session_state.step == 0:
     add_msg("assistant", init)
     st.session_state.step = 1
 
-# RENDER MESSAGES
-for i, msg in enumerate(st.session_state.messages):
+for msg in st.session_state.messages:
     avatar = AI_AVATAR if msg["role"] == "assistant" else USER_AVATAR
     with st.chat_message(msg["role"], avatar=avatar):
-        is_last = (i == len(st.session_state.messages) - 1)
-        
-        if msg["role"] == "assistant" and not msg["animated"] and is_last:
-            if msg.get("html"):
-                st.markdown(msg["content"], unsafe_allow_html=True)
-            else:
-                stream_text(msg["content"])
-            
-            if msg.get("chart"):
-                st.plotly_chart(msg["chart"], use_container_width=True)
-            
-            msg["animated"] = True
+        if msg.get("html"):
+            st.markdown(msg["content"], unsafe_allow_html=True)
         else:
-            if msg.get("html"):
-                st.markdown(msg["content"], unsafe_allow_html=True)
-            else:
-                st.markdown(msg["content"])
-            
-            if msg.get("chart"):
-                st.plotly_chart(msg["chart"], use_container_width=True)
+            st.markdown(msg["content"])
+        
+        if msg.get("chart"):
+            st.plotly_chart(msg["chart"], use_container_width=True)
 
-# INPUT
 disabled = (st.session_state.step == 99)
 user_input = st.chat_input("여기에 편하게 답변해 주세요...", disabled=disabled)
 
-# LOGIC
 if user_input:
-    add_msg("user", user_input, animated=True)
+    add_msg("user", user_input)
     
-    # STEP 1: 이름
     if st.session_state.step == 1:
         name = user_input.strip()
         st.session_state.user_data['name'] = name
@@ -319,14 +279,10 @@ if user_input:
 예) 35세 여성"""
         add_msg("assistant", response)
         st.session_state.step = 2
+        st.rerun()
     
-    # STEP 2: 나이/성별
     elif st.session_state.step == 2:
         st.session_state.user_data['age_gender'] = user_input
-        
-        with st.status("분석 중...", expanded=False) as status:
-            time.sleep(0.8)
-            status.update(label="완료", state="complete", expanded=False)
         
         name = st.session_state.user_data.get('name', '고객')
         
@@ -347,22 +303,21 @@ if user_input:
 {name}님의 몸이 지금 무슨 신호를 보내고 있는지 제가 정확히 짚어드릴게요."""
         add_msg("assistant", response)
         st.session_state.step = 3
+        st.rerun()
     
-    # STEP 3: 증상 입력 → 콜드 리딩 (확인 사살)
     elif st.session_state.step == 3:
         symptom = user_input.lower()
         st.session_state.user_data['symptom'] = user_input
         
         with st.status("임상 패턴 분석 중...", expanded=True) as status:
             st.write("🔍 20만 건의 케이스 데이터 대조 중...")
-            time.sleep(0.6)
+            time.sleep(1.0)
             st.write("🧬 체질 알고리즘 연산 실행...")
-            time.sleep(0.6)
+            time.sleep(1.0)
             status.update(label="분석 완료", state="complete", expanded=False)
         
         name = st.session_state.user_data.get('name', '고객')
         
-        # 콜드 리딩: "혹시 이런 것도...?"
         if "붓" in symptom or "부종" in symptom or "무겁" in symptom:
             diagnosis_type = "수독정체형"
             st.session_state.user_data['type'] = diagnosis_type
@@ -488,27 +443,24 @@ if user_input:
         
         add_msg("assistant", response)
         st.session_state.step = 4
+        st.rerun()
     
-    # STEP 4: 약물 이력 → 최종 진단 (공포 + 해결책)
     elif st.session_state.step == 4:
         drug_history = user_input.lower()
         st.session_state.user_data['drug_history'] = user_input
         
         with st.status("최종 진단 실행 중...", expanded=True) as status:
             st.write("🧬 체질 데이터 통합 분석...")
-            time.sleep(0.6)
+            time.sleep(1.0)
             st.write("💊 약물 내성 평가...")
-            time.sleep(0.7)
+            time.sleep(1.0)
             st.write("⚠ 리스크 레벨 판정...")
-            time.sleep(0.5)
+            time.sleep(1.0)
             status.update(label="진단 완료", state="complete", expanded=False)
-        
-        time.sleep(0.3)
         
         name = st.session_state.user_data.get('name', '고객')
         diagnosis_type = st.session_state.user_data.get('type', '위열과다형')
         
-        # 약물 복용 여부에 따른 공포 강화
         has_drug = "있" in drug_history or "먹" in drug_history or "복용" in drug_history
         
         if diagnosis_type == "수독정체형":
@@ -685,8 +637,8 @@ if user_input:
         
         add_msg("assistant", final_cta)
         st.session_state.step = 99
+        st.rerun()
 
-# CONTACT FORM
 if st.session_state.step == 99:
     st.markdown("<div style='height:30px;'></div>", unsafe_allow_html=True)
     st.markdown("<h3 style='color:#FF0000; text-align:center; font-weight:900;'>📱 카톡 리포트 신청 (무료)</h3>", unsafe_allow_html=True)
