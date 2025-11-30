@@ -1,260 +1,165 @@
 import streamlit as st
-import time
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
+import time
+import random
 
-# --- 1. 기본 설정 (수정됨: layout="mobile" -> "centered") ---
-st.set_page_config(page_title="Veritas Medical Core", page_icon="🧬", layout="centered")
+# -----------------------------------------------------------------------------
+# 1. SYSTEM CONFIGURATION (THE BLACK BOX THEME)
+# -----------------------------------------------------------------------------
+st.set_page_config(
+    page_title="VERITAS AI DIAGNOSIS",
+    page_icon="👁‍🗨",
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
 
-# 스타일: 리얼 블랙 & 네온
+# [CSS: 압도적인 몰입감과 긴장감 조성]
 st.markdown("""
 <style>
-    .stApp { background-color: #000000; color: #E0E0E0; font-family: sans-serif; }
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700;900&display=swap');
+
+    .stApp {
+        background-color: #000000 !important;
+        color: #E0E0E0;
+        font-family: 'Noto Sans KR', sans-serif;
+    }
+
+    /* UI Elements Hiding */
+    #MainMenu, footer, header {visibility: hidden;}
+
+    /* Typography */
+    h1 { color: #FFF; font-weight: 900; letter-spacing: -1px; }
+    .highlight-red { color: #FF0033; font-weight: bold; text-shadow: 0 0 10px #FF0033; }
+    .highlight-blue { color: #00BFFF; font-weight: bold; text-shadow: 0 0 10px #00BFFF; }
     
-    /* 입력창 스타일 */
-    .stChatInput { 
-        background-color: #111 !important; 
-        border: 1px solid #333 !important; 
-        color: #fff !important;
+    /* System Logs */
+    .sys-msg {
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        color: #444;
+        border-left: 2px solid #333;
+        padding-left: 10px;
+        margin-bottom: 10px;
+    }
+
+    /* Chat Message (AI Persona) */
+    .stChatMessage {
+        background-color: #0A0A0A !important;
+        border: 1px solid #222;
+        margin-bottom: 15px;
     }
     
-    /* 버튼 스타일 */
-    div.stButton > button {
-        background-color: #0A0A0A; border: 1px solid #333; color: #ccc;
-        width: 100%; padding: 15px; text-align: left; border-radius: 8px; margin-bottom: 5px;
-        transition: 0.3s;
+    /* Input Fields (Terminal Style) */
+    .stTextArea > div > div > textarea {
+        background-color: #050505 !important;
+        color: #00FF00 !important;
+        border: 1px solid #333 !important;
+        font-family: 'Noto Sans KR', sans-serif;
+        font-size: 16px;
     }
-    div.stButton > button:hover {
-        border-color: #00FF00; color: #00FF00; background-color: #051105;
+    .stTextInput > div > div > input {
+        background-color: #050505 !important;
+        color: #FFF !important;
+        border: 1px solid #333 !important;
+    }
+
+    /* Action Buttons (Neon Glitch) */
+    .stButton > button {
+        background-color: #000000 !important;
+        color: #00BFFF !important;
+        border: 1px solid #00BFFF !important;
+        font-weight: bold;
+        padding: 15px 0;
+        transition: all 0.3s;
+        width: 100%;
+    }
+    .stButton > button:hover {
+        background-color: #00BFFF !important;
+        color: #000 !important;
+        box-shadow: 0 0 20px #00BFFF;
     }
     
-    /* AI 메시지 강조 */
-    .ai-msg { border-left: 3px solid #00BFFF; padding-left: 10px; margin: 10px 0; }
-    .user-msg { text-align: right; color: #888; margin: 10px 0; }
-    .highlight { color: #00FF00; font-weight: bold; }
-    .alert { color: #FF4B4B; font-weight: bold; }
-    
-    /* 헤더 숨김 (깔끔하게) */
-    header {visibility: hidden;}
-    footer {visibility: hidden;}
+    /* Critical Alert Box */
+    .alert-box {
+        border: 1px solid #FF0033;
+        background-color: rgba(255, 0, 51, 0.1);
+        padding: 20px;
+        border-radius: 5px;
+        text-align: center;
+        margin-top: 20px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# --- 2. 세션 상태 관리 (대화 기록 및 단계 제어) ---
-if "step" not in st.session_state:
-    st.session_state.step = 0
-if "history" not in st.session_state:
-    st.session_state.history = [] # 대화 로그 저장
-if "user_data" not in st.session_state:
-    st.session_state.user_data = {}
+# -----------------------------------------------------------------------------
+# 2. LOGIC ENGINE (Simulated AI Intelligence)
+# -----------------------------------------------------------------------------
+if 'stage' not in st.session_state:
+    st.session_state.stage = 'INTRO'
+if 'user_context' not in st.session_state:
+    st.session_state.user_context = {}
 
-# --- 3. 헬퍼 함수: 대화 기록 출력 ---
-def show_history():
-    for chat in st.session_state.history:
-        role = chat["role"]
-        text = chat["text"]
-        if role == "ai":
-            with st.chat_message("assistant", avatar="🧬"):
-                st.markdown(text, unsafe_allow_html=True)
-        else:
-            with st.chat_message("user", avatar="👤"):
-                st.markdown(text)
+def stream_text(text, speed=0.03):
+    """AI가 실시간으로 말하는 듯한 효과"""
+    placeholder = st.empty()
+    full_text = ""
+    for char in text:
+        full_text += char
+        placeholder.markdown(full_text + "▌")
+        time.sleep(speed)
+    placeholder.markdown(full_text)
 
-# --- 4. 헬퍼 함수: 생각하는 척 연출 ---
-def ai_thinking(text="데이터 분석 중..."):
-    with st.chat_message("assistant", avatar="🧬"):
-        with st.status(text, expanded=True) as status:
-            st.write("Checking Clinical Data...")
-            time.sleep(0.5)
-            st.write("Pattern Matching...")
-            time.sleep(0.5)
-            status.update(label="Complete", state="complete", expanded=False)
+def analyze_keywords(text):
+    """키워드 기반의 '콜드 리딩(Cold Reading)' 로직"""
+    text = text.lower()
+    if any(x in text for x in ['물', '붓기', '부종', '아침', '반지', '신발', '팅팅']):
+        return "Edema", "혹시 아침에 일어나면 손이 쥐어지지 않거나, 저녁에 신발이 꽉 끼지 않으십니까? 이건 살이 아니라 '독소 수분'입니다."
+    elif any(x in text for x in ['밥', '빵', '면', '단거', '초콜릿', '간식', '식욕', '배고파', '먹고']):
+        return "Carb", "식사 후에도 금방 허기가 지고, 스트레스를 받으면 단 것부터 찾게 되시죠? '가짜 배고픔'에 뇌가 속고 있는 상태입니다."
+    elif any(x in text for x in ['술', '야식', '회식', '고기', '기름', '맥주', '소주']):
+        return "Liver", "단순한 칼로리 문제가 아닙니다. 간의 해독 기능이 마비되어 지방을 태우지 못하고 쌓아두기만 하는 '대사 정체' 상태입니다."
+    elif any(x in text for x in ['피곤', '무기력', '잠', '힘들', '우울', '짜증', '스트레스']):
+        return "Stress", "아무리 굶어도 안 빠지셨죠? 몸이 '생존 모드'에 들어가서 지방을 꽉 붙들고 있습니다. 이건 의지 문제가 아니라 호르몬 문제입니다."
+    else:
+        return "General", "체중계의 숫자보다 더 심각한 것은 체내의 '염증 반응'입니다. 현재 대사 시스템이 셧다운 직전입니다."
 
-# --- 5. 메인 로직 (단계별 시나리오) ---
+def generate_danger_chart(score):
+    """위협적인 붉은색 레이더 차트"""
+    categories = ['식욕 통제력', '림프 순환', '기초 대사량', '호르몬 균형', '염증 수치']
+    # 환자에게 충격을 주기 위해 일부러 극단적인 수치 생성
+    values = [random.randint(10, 30), random.randint(10, 40), random.randint(20, 50), random.randint(10, 30), random.randint(80, 100)]
+    
+    fig = go.Figure()
+    fig.add_trace(go.Scatterpolar(
+        r=values + [values[0]],
+        theta=categories + [categories[0]],
+        fill='toself',
+        fillcolor='rgba(255, 0, 51, 0.3)', # 붉은색 채우기
+        line=dict(color='#FF0033', width=3), # 붉은색 선
+    ))
+    fig.update_layout(
+        polar=dict(
+            bgcolor='rgba(0,0,0,0)',
+            radialaxis=dict(visible=True, range=[0, 100], showticklabels=False, linecolor='#333'),
+            angularaxis=dict(color='#AAA')
+        ),
+        paper_bgcolor='rgba(0,0,0,0)',
+        showlegend=False,
+        margin=dict(l=20, r=20, t=20, b=20),
+        font=dict(family='Noto Sans KR', color='#FFF')
+    )
+    return fig
 
-# 로고 및 헤더
-st.markdown("### Veritas <span style='color:#00BFFF; font-size:0.8em'>| Clinical AI Engine</span>", unsafe_allow_html=True)
+# -----------------------------------------------------------------------------
+# 3. UI FLOW (THE SALES FUNNEL)
+# -----------------------------------------------------------------------------
+
+# [HEADER]
+st.markdown("<div style='text-align:right; font-size:10px; color:#555;'>VERITAS MED-AI v10.0 ● CONNECTED</div>", unsafe_allow_html=True)
 st.divider()
 
-# 과거 대화 출력
-show_history()
-
-# [Step 0] 오프닝 (강력한 후킹)
-if st.session_state.step == 0:
-    if len(st.session_state.history) == 0:
-        # 첫 인사
-        opening_msg = """
-        **System Online.**
-        반갑습니다. 자연과한의원 전용 **[Veritas AI]**입니다.
-        
-        단순한 설문조사가 아닙니다.
-        25년 임상 데이터를 기반으로, 귀하가 **'물만 먹어도 살이 찌는 진짜 원인'**을 찾아냅니다.
-        
-        **준비되셨습니까?**
-        """
-        st.session_state.history.append({"role": "ai", "text": opening_msg})
-        st.rerun()
-    
-    # 버튼 액션
-    if st.button("네, 진단을 시작합니다. (Start)"):
-        st.session_state.history.append({"role": "user", "text": "네, 진단을 시작합니다."})
-        st.session_state.step = 1
-        st.rerun()
-
-# [Step 1] 기본 정보 입력 & BMI 공포 마케팅
-elif st.session_state.step == 1:
-    if len(st.session_state.history) < 3: # 질문 안 던졌으면 던짐
-        q_msg = "가장 먼저, 기본 생체 데이터를 확인하겠습니다. **[성별 / 키 / 체중]**을 입력해 주십시오."
-        st.session_state.history.append({"role": "ai", "text": q_msg})
-        st.rerun()
-
-    with st.form("basic_info"):
-        gender = st.radio("성별", ["남성", "여성"], horizontal=True)
-        col1, col2 = st.columns(2)
-        height = col1.number_input("키 (cm)", 140, 200, 165)
-        weight = col2.number_input("체중 (kg)", 40, 150, 60)
-        
-        if st.form_submit_button("데이터 입력 완료"):
-            # 유저 입력 기록
-            st.session_state.history.append({"role": "user", "text": f"{gender}, {height}cm, {weight}kg"})
-            st.session_state.user_data['gender'] = gender
-            st.session_state.user_data['weight'] = weight
-            
-            # --- [AI의 영업 멘트: BMI 분석] ---
-            ai_thinking("기초 대사량 및 BMI 산출 중...")
-            
-            # 가벼운 공포 조장 멘트 생성
-            bmi = weight / ((height/100)**2)
-            comment = ""
-            if bmi >= 25:
-                comment = f"""
-                <div class='ai-msg'>
-                🚨 <strong>경고 신호 감지.</strong><br>
-                현재 BMI 수치는 <strong>{bmi:.1f}</strong>로, 단순 과체중을 넘어 <strong>대사 증후군 위험 단계</strong>에 진입했습니다.<br>
-                이 구간에서는 '의지'로 빼는 것은 불가능합니다. '대사량 조작'이 필수적입니다.
-                </div>
-                """
-            else:
-                comment = f"""
-                <div class='ai-msg'>
-                체중 자체는 정상이지만, <strong>'마른 비만'</strong>의 가능성이 높습니다.<br>
-                내장 지방 레벨을 확인하기 위해 심층 분석으로 넘어갑니다.
-                </div>
-                """
-            
-            st.session_state.history.append({"role": "ai", "text": comment})
-            st.session_state.step = 2
-            st.rerun()
-
-# [Step 2] 핵심 증상 (주관식 같은 객관식)
-elif st.session_state.step == 2:
-    if len(st.session_state.history) % 2 == 0: # 짝수면 AI 차례
-        q_msg = """
-        데이터 패턴을 분석합니다.
-        현재 귀하의 다이어트를 가장 방해하는 **[핵심 장애물]**은 무엇입니까?
-        솔직하게 선택해 주십시오. AI가 원인을 역추적합니다.
-        """
-        st.session_state.history.append({"role": "ai", "text": q_msg})
-        st.rerun()
-
-    # 버튼 선택지
-    col1, col2 = st.columns(2)
-    symptom = None
-    
-    if col1.button("🔥 식욕이 안 참아져요 (폭식)"):
-        symptom = "식욕"
-    if col2.button("💧 물만 먹어도 부어요 (부종)"):
-        symptom = "부종"
-    if col1.button("❄️ 손발이 차고 추워요 (냉증)"):
-        symptom = "냉증"
-    if col2.button("💩 변비가 심해요 (독소)"):
-        symptom = "변비"
-
-    if symptom:
-        st.session_state.history.append({"role": "user", "text": f"가장 큰 문제는 [{symptom}] 입니다."})
-        st.session_state.user_data['symptom'] = symptom
-        
-        # --- [AI의 영업 멘트: 증상 해석 & 공감] ---
-        ai_thinking(f"'{symptom}' 원인 데이터 역추적 중...")
-        
-        analysis_msg = ""
-        if symptom == "식욕":
-            analysis_msg = """
-            <div class='ai-msg'>
-            역시 그렇군요. 이건 귀하의 의지박약이 아닙니다.<br>
-            뇌의 포만감 중추가 고장 난 <strong>[가짜 식욕(Fake Hunger)]</strong> 상태입니다.<br>
-            위장에 쌓인 열(Heat)을 끄지 않으면, 평생 참다가 폭발하는 패턴을 반복하게 됩니다.
-            </div>
-            """
-        elif symptom == "부종":
-            analysis_msg = """
-            <div class='ai-msg'>
-            심각합니다. 살이 찐 게 아니라 <strong>[독소 림프]</strong>가 막혀 있습니다.<br>
-            이 상태에서 운동하면 오히려 몸이 더 붓습니다.<br>
-            순환을 뚫어주는 배출 치료가 시급합니다.
-            </div>
-            """
-        else:
-            analysis_msg = f"""
-            <div class='ai-msg'>
-            감지되었습니다. 귀하의 비만 유형은 단순 칼로리 과잉이 아닌,<br>
-            <strong>[{symptom}으로 인한 대사 기능 정지]</strong>가 원인입니다.<br>
-            남들보다 2배 적게 먹어도 찌는 억울한 체질이시군요.
-            </div>
-            """
-            
-        st.session_state.history.append({"role": "ai", "text": analysis_msg})
-        st.session_state.step = 3
-        st.rerun()
-
-# [Step 3] 최종 결과 (압도적 시각화 & CTA)
-elif st.session_state.step == 3:
-    ai_thinking("최종 임상 리포트 생성 중...")
-    
-    # 1. 진단명 출력
-    st.markdown(f"""
-    <div style='background-color:#111; padding:20px; border:1px solid #333; border-radius:10px; margin-top:20px;'>
-        <h2 style='color:#00FF00; margin:0;'>DIAGNOSIS REPORT</h2>
-        <p style='color:#888;'>Subject: {st.session_state.user_data.get('gender', 'Unknown')} / Type: Critical</p>
-        <hr style='border-color:#333;'>
-        <h1 style='color:#FFF; font-size:40px;'>Type-C: <span style='color:#FF4B4B'>대사 급속 저하형</span></h1>
-        <p style='color:#CCC; line-height:1.6;'>
-        귀하의 신체는 현재 <strong>'지방을 태우는 보일러'</strong>가 꺼져 있는 상태입니다.<br>
-        이대로 방치할 경우, 1년 내 <strong>체중이 15% 이상 증가</strong>할 확률이 88%로 예측됩니다.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # 2. 레이더 차트 (Plotly)
-    categories = ['식욕 통제력', '기초 대사량', '독소 배출력', '스트레스', '호르몬 밸런스']
-    values = [20, 30, 40, 90, 50] # 일부러 안 좋게 설정 (가스라이팅용)
-    
-    fig = px.line_polar(r=values, theta=categories, line_close=True)
-    fig.update_traces(fill='toself', line_color='#00FF00')
-    fig.update_layout(
-        paper_bgcolor="rgba(0,0,0,0)",
-        polar=dict(
-            bgcolor="rgba(0,0,0,0)",
-            radialaxis=dict(visible=True, range=[0, 100], showticklabels=False)
-        ),
-        font=dict(color="white"),
-        showlegend=False
-    )
-    st.plotly_chart(fig, use_container_width=True)
-    
-    # 3. 처방 및 상담 신청 (CTA)
-    st.warning("⚠️ 긴급 처방이 필요합니다. AI가 최적화된 처방전을 전송했습니다.")
-    
-    st.markdown("### 💊 AI Recommended Solution")
-    st.info("**[지방사약 Black]** : 대사량 300% 강제 부스팅 + 식욕 차단")
-    
-    with st.form("lead_form"):
-        st.write("**지금 상담 신청 시, 'AI 진단 리포트'가 원장님께 즉시 전달됩니다.**")
-        col1, col2 = st.columns(2)
-        name = col1.text_input("성함")
-        phone = col2.text_input("연락처 (010-XXXX-XXXX)")
-        
-        if st.form_submit_button("🚀 긴급 처방 상담 신청하기 (우선 배정)"):
-            st.success(f"{name}님, 접수가 완료되었습니다. 담당 의료진이 데이터를 분석 중입니다. 5분 내로 연락드립니다.")
-            st.balloons()
+# -----------------------------------------------------------------------------
+# STAGE 1: THE INTERROGATION (하소연 유도)
+# -----------------------------------------------------------------------------
+if st.session_state.
