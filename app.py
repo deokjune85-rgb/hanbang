@@ -174,13 +174,21 @@ AI_AVATAR = "🔷"
 USER_AVATAR = "👤"
 
 # FUNCTIONS
-def stream_text(text, speed=0.015):
+def stream_text(text, speed=0.008):
+    """Smoother streaming with complete text guarantee"""
     placeholder = st.empty()
     display = ""
-    for char in text:
-        display += char
+    
+    # Stream in chunks for better performance
+    chunk_size = 3
+    for i in range(0, len(text), chunk_size):
+        chunk = text[i:i+chunk_size]
+        display += chunk
         placeholder.markdown(display)
         time.sleep(speed)
+    
+    # Ensure final complete text is displayed
+    placeholder.markdown(text)
     return text
 
 def add_msg(role, content, html=False, chart=None, animated=False):
@@ -292,8 +300,6 @@ if user_input:
         name = user_input.strip()
         st.session_state.user_data['name'] = name
         
-        time.sleep(0.5)
-        
         response = f"""반갑습니다, **{name}님**!
 
 {name}님, 솔직히 말씀드릴게요.
@@ -319,7 +325,7 @@ if user_input:
         st.session_state.user_data['age_gender'] = user_input
         
         with st.status("분석 중...", expanded=False) as status:
-            time.sleep(1.2)
+            time.sleep(0.8)
             status.update(label="완료", state="complete", expanded=False)
         
         name = st.session_state.user_data.get('name', '고객')
@@ -349,9 +355,9 @@ if user_input:
         
         with st.status("임상 패턴 분석 중...", expanded=True) as status:
             st.write("🔍 20만 건의 케이스 데이터 대조 중...")
-            time.sleep(1.0)
+            time.sleep(0.6)
             st.write("🧬 체질 알고리즘 연산 실행...")
-            time.sleep(1.2)
+            time.sleep(0.6)
             status.update(label="분석 완료", state="complete", expanded=False)
         
         name = st.session_state.user_data.get('name', '고객')
@@ -490,14 +496,14 @@ if user_input:
         
         with st.status("최종 진단 실행 중...", expanded=True) as status:
             st.write("🧬 체질 데이터 통합 분석...")
-            time.sleep(1.0)
+            time.sleep(0.6)
             st.write("💊 약물 내성 평가...")
-            time.sleep(1.3)
+            time.sleep(0.7)
             st.write("⚠ 리스크 레벨 판정...")
-            time.sleep(0.9)
+            time.sleep(0.5)
             status.update(label="진단 완료", state="complete", expanded=False)
         
-        time.sleep(0.7)
+        time.sleep(0.3)
         
         name = st.session_state.user_data.get('name', '고객')
         diagnosis_type = st.session_state.user_data.get('type', '위열과다형')
