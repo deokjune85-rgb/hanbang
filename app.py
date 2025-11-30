@@ -192,13 +192,13 @@ def stream_text(text, speed=0.015):
         time.sleep(speed)
     return text
 
-def add_msg(role, content, html=False, chart=None):
+def add_msg(role, content, html=False, chart=None, animated=False):
     st.session_state.messages.append({
         "role": role,
         "content": content,
         "html": html,
         "chart": chart,
-        "animated": False
+        "animated": animated
     })
 
 def create_radar_chart(scores):
