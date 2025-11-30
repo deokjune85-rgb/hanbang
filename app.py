@@ -3,9 +3,6 @@ import time
 import plotly.graph_objects as go
 from datetime import datetime
 
-# ============================================
-# SYSTEM CONFIGURATION
-# ============================================
 st.set_page_config(
     page_title="자연과한의원 AI 진단센터",
     page_icon="🧬",
@@ -13,9 +10,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# ============================================
 # CSS
-# ============================================
 custom_css = """
 <style>
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
@@ -167,9 +162,7 @@ custom_css = """
 """
 st.markdown(custom_css, unsafe_allow_html=True)
 
-# ============================================
 # STATE
-# ============================================
 if 'messages' not in st.session_state:
     st.session_state.messages = []
 if 'step' not in st.session_state:
@@ -180,9 +173,7 @@ if 'user_data' not in st.session_state:
 AI_AVATAR = "🔷"
 USER_AVATAR = "👤"
 
-# ============================================
 # FUNCTIONS
-# ============================================
 def stream_text(text, speed=0.015):
     placeholder = st.empty()
     display = ""
@@ -237,16 +228,12 @@ def create_radar_chart(scores):
     
     return fig
 
-# ============================================
 # HEADER
-# ============================================
 st.markdown("<h2 style='text-align:center; color:#00FF00; font-weight:900; margin-bottom:5px;'>자연과한의원 AI 진단센터</h2>", unsafe_allow_html=True)
 st.markdown("<p style='text-align:center; font-size:12px; color:#666; margin-bottom:30px;'>25년 임상 데이터 기반 / 24시간 무료 진단</p>", unsafe_allow_html=True)
 st.divider()
 
-# ============================================
 # INIT
-# ============================================
 if st.session_state.step == 0:
     init = """안녕하세요, 자연과한의원입니다.
 
@@ -267,9 +254,7 @@ if st.session_state.step == 0:
     add_msg("assistant", init)
     st.session_state.step = 1
 
-# ============================================
 # RENDER MESSAGES
-# ============================================
 for i, msg in enumerate(st.session_state.messages):
     avatar = AI_AVATAR if msg["role"] == "assistant" else USER_AVATAR
     with st.chat_message(msg["role"], avatar=avatar):
@@ -294,18 +279,15 @@ for i, msg in enumerate(st.session_state.messages):
             if msg.get("chart"):
                 st.plotly_chart(msg["chart"], use_container_width=True)
 
-# ============================================
 # INPUT
-# ============================================
 disabled = (st.session_state.step == 99)
 user_input = st.chat_input("여기에 편하게 답변해 주세요...", disabled=disabled)
 
-# ============================================
 # LOGIC
-# ============================================
 if user_input:
     add_msg("user", user_input, animated=True)
     
+    # STEP 1: 이름
     if st.session_state.step == 1:
         name = user_input.strip()
         st.session_state.user_data['name'] = name
@@ -332,6 +314,7 @@ if user_input:
         add_msg("assistant", response)
         st.session_state.step = 2
     
+    # STEP 2: 나이/성별
     elif st.session_state.step == 2:
         st.session_state.user_data['age_gender'] = user_input
         
@@ -359,6 +342,7 @@ if user_input:
         add_msg("assistant", response)
         st.session_state.step = 3
     
+    # STEP 3: 증상 입력 → 콜드 리딩 (확인 사살)
     elif st.session_state.step == 3:
         symptom = user_input.lower()
         st.session_state.user_data['symptom'] = user_input
@@ -372,140 +356,144 @@ if user_input:
         
         name = st.session_state.user_data.get('name', '고객')
         
+        # 콜드 리딩: "혹시 이런 것도...?"
         if "붓" in symptom or "부종" in symptom or "무겁" in symptom:
             diagnosis_type = "수독정체형"
             st.session_state.user_data['type'] = diagnosis_type
             
-            response = f"""**{name}님, 정확히 짚으셨네요.**
+            response = f"""**{name}님, 잠깐만요.**
 
-{name}님이 붓는 이유, 제가 말씀드릴게요.
+{name}님이 "붓는다"고 하셨는데...
 
-**림프 순환이 막혔습니다.**
-쉽게 말하면, 몸에 **쓰레기 배출구가 막힌 상태**예요.
+혹시 이런 증상도 있지 않으세요?
 
-그래서 먹은 음식이 지방이 되기 전에
-**수분과 노폐물이 먼저 쌓이는 겁니다.**
+✓ **아침에 일어나면 얼굴이 퉁퉁 붓는다**
+✓ **양말 벗으면 자국이 1시간 이상 안 없어진다**
+✓ **저녁만 되면 다리가 코끼리 다리로 변한다**
+✓ **손가락으로 종아리 누르면 쏙 들어가고 안 올라온다**
 
-혹시 {name}님, 이런 증상도 있지 않으세요?
+**하나라도 맞으면 답장해 주세요.**
 
-- 아침에 얼굴이 퉁퉁 붓는다
-- 양말 자국이 오래 간다
-- 저녁만 되면 다리가 코끼리 다리처럼 변한다
+제가 {name}님 집에 CCTV를 단 게 아니라,
+이게 전형적인 **"림프 순환 정체형"** 증상이거든요.
 
-**하나라도 해당되면 위험합니다.**
+이 상태로 굶는 다이어트 하면?
+**근육만 빠지고 부종은 더 심해집니다.**
 
-왜냐하면, 이 상태로 **"굶는 다이어트"**를 하면
-근육만 빠지고 **부종은 더 심해지거든요.**
+{name}님께 맞는 처방을 찾기 위해 한 가지만 더 여쭤볼게요.
 
-{name}님, 혹시 과거에 **다이어트 약(양약/한약)** 드신 적 있으세요?
-(있으면 "있어요", 없으면 "없어요"라고만 답해주세요)"""
+과거에 **다이어트 약(양약/한약)** 드신 적 있으세요?
+(있으면 "있어요", 없으면 "없어요"만 답해주세요)"""
             
-        elif "폭식" in symptom or "식욕" in symptom or "배고" in symptom or "먹" in symptom:
+        elif "폭식" in symptom or "식욕" in symptom or "배고" in symptom or "먹" in symptom or "살" in symptom or "쪄" in symptom:
             diagnosis_type = "위열과다형"
             st.session_state.user_data['type'] = diagnosis_type
             
-            response = f"""**{name}님, 이거 심각합니다.**
+            response = f"""**{name}님, 잠깐만요.**
 
-{name}님이 느끼는 그 배고픔?
-**"가짜 배고픔"입니다.**
+{name}님 말씀 듣다 보니까...
 
-뇌가 **착각**하고 있는 거예요.
+혹시 이런 패턴 아니세요?
+
+✓ **아침엔 입맛이 없는데, 저녁 8시 이후에만 미친 듯이 당긴다**
+✓ **먹고 나서 30분도 안 돼서 또 배고프다**
+✓ **밤에 치킨/라면 시키고, 다음 날 아침 후회한다**
+✓ **먹으면서도 "왜 이러지?" 싶은데 손이 안 멈춘다**
+
+**하나라도 맞으면 답장해 주세요.**
+
+{name}님, 이건 **"가짜 배고픔"**입니다.
+
+뇌가 착각하고 있는 거예요.
 위장에 **열(Heat)**이 과도하게 차서
-포만 중추가 고장 난 상태입니다.
+포만 중추가 **"배고프다"**는 거짓 신호를 보내는 겁니다.
 
-쉽게 비유하면,
-**"연료통은 가득한데, 계기판이 빈 걸로 표시되는 차"**예요.
+이거 방치하면?
+**당뇨 전단계로 직행합니다.**
 
-혹시 {name}님, 이런 증상도 있지 않으세요?
+{name}님께 딱 맞는 처방을 찾기 위해 솔직히 답해주세요.
 
-- 먹고 나서 30분도 안 돼서 또 배고프다
-- 밤에 라면, 치킨 시키고 다음 날 후회한다
-- 입이 자주 마르고, 물을 많이 마신다
-
-**이거 방치하면 당뇨 직행입니다.**
-
-왜냐하면 식욕 억제제로 막아봤자
-**위장의 열은 그대로**거든요.
-
-약 끊으면? 요요 100%입니다.
-
-{name}님, 혹시 과거에 **식욕억제제나 한약** 드신 적 있으세요?
-(솔직하게 말씀해 주세요. 저희가 판단하는 게 아니라 **처방 설계**를 위해 필요합니다)"""
+과거에 **식욕억제제나 다이어트 한약** 드신 적 있으세요?
+(있으면 "있어요", 없으면 "없어요" - 저희가 판단하는 게 아니라 **처방 강도 조절**을 위해 필요합니다)"""
         
         elif "차갑" in symptom or "냉" in symptom or "대사" in symptom or "적게" in symptom:
             diagnosis_type = "냉증형대사장애"
             st.session_state.user_data['type'] = diagnosis_type
             
-            response = f"""**{name}님... 이거 제일 무섭습니다.**
+            response = f"""**{name}님, 잠깐만요.**
 
-{name}님의 몸은 지금
-**"난방이 꺼진 집"** 상태예요.
+{name}님 증상 들어보니...
 
-**기초대사량이 바닥**을 쳤습니다.
-에너지를 안 쓰는 거예요.
+혹시 이런 것도 있지 않으세요?
 
-그래서 적게 먹어도 안 빠지는 겁니다.
-**몸이 절약 모드로 돌입했거든요.**
+✓ **손발이 얼음장처럼 차갑다 (여름에도)**
+✓ **아침에 일어나기 힘들고 만성 피로**
+✓ **조금만 먹어도 배가 나온다**
+✓ **체중계 숫자는 안 변하는데 옷은 안 맞는다**
 
-혹시 {name}님, 이런 증상도 있지 않으세요?
+**하나라도 맞으면 답장해 주세요.**
 
-- 손발이 얼음장처럼 차갑다
-- 여름에도 긴팔 입는다
-- 아침에 일어나기 힘들고 피곤하다
+{name}님, 이건 제일 무서운 케이스입니다.
 
-**이 상태로 굶으면?**
-**근육만 녹고, 지방은 그대로입니다.**
+**기초대사량이 바닥**을 쳤어요.
+몸이 **"절약 모드"**로 돌입한 겁니다.
 
-최악의 경우,
-**"물만 먹어도 찌는 체질"**로 고착됩니다.
+이 상태로 굶으면?
+**근육만 녹고, 지방은 꽁꽁 숨깁니다.**
 
-{name}님, 과거에 **극단적인 다이어트(원푸드, 굶기 등)** 해보신 적 있으세요?
-(있으면 솔직히 말씀해 주세요. 저희가 처방 강도를 조절해야 합니다)"""
+최악의 경우 **"물만 먹어도 찌는 체질"**로 고착됩니다.
+
+{name}님, 솔직하게 답해주세요.
+
+과거에 **극단적인 다이어트(원푸드, 굶기 등)** 해보신 적 있으세요?
+(있으면 "있어요", 없으면 "없어요" - 처방 강도 결정을 위해 꼭 필요합니다)"""
         
         else:
             diagnosis_type = "간기울결형"
             st.session_state.user_data['type'] = diagnosis_type
             
-            response = f"""**{name}님, 지금 스트레스 많으시죠?**
+            response = f"""**{name}님, 잠깐만요.**
 
-제가 증상만 듣고도 알 수 있어요.
+{name}님 상황 보니까...
 
-{name}님의 몸은 지금
-**"비상 모드"**로 돌아가고 있습니다.
+혹시 이런 패턴 아니세요?
 
-코르티솔(스트레스 호르몬)이 과다 분비되면서
-**복부에 지방을 쌓으라는 명령**을 내리고 있어요.
+✓ **업무/인간관계 스트레스가 극심하다**
+✓ **낮엔 안 먹다가, 밤에 폭발적으로 먹는다**
+✓ **밤에 잠이 안 와서 폰만 본다**
+✓ **화나면 먹으면서 푼다 (여성의 경우 생리 전 폭식)**
 
-이건 의지의 문제가 아닙니다.
-**호르몬의 문제**예요.
+**하나라도 맞으면 답장해 주세요.**
 
-혹시 {name}님, 이런 증상도 있지 않으세요?
+{name}님, 이건 **의지의 문제가 아닙니다.**
 
-- 업무 스트레스가 심하다
-- 밤에 잠이 잘 안 온다
-- 생리 전 폭식이 심하다 (여성)
-- 화가 나면 먹으면서 푼다
+코르티솔(스트레스 호르몬) 과다 분비로
+**자율신경이 망가진 상태**예요.
 
-**이거 방치하면 안 됩니다.**
+그래서 밤에만 폭식하는 겁니다.
 
-스트레스성 비만은
-**"자율신경 교정"**이 최우선이거든요.
+이 상태로 식욕억제제 먹으면?
+**스트레스만 더 쌓이고 악순환 반복합니다.**
 
-{name}님, 혹시 최근 **수면제, 항우울제** 같은 약 복용 중이세요?
-(약물 상호작용 때문에 여쭤보는 겁니다. 솔직히 말씀해 주세요)"""
+{name}님, 솔직하게 답해주세요.
+
+과거에 **수면제, 항우울제, 다이어트 약** 같은 거 드신 적 있으세요?
+(있으면 "있어요", 없으면 "없어요" - 약물 상호작용 때문에 꼭 확인해야 합니다)"""
         
         add_msg("assistant", response)
         st.session_state.step = 4
     
+    # STEP 4: 약물 이력 → 최종 진단 (공포 + 해결책)
     elif st.session_state.step == 4:
+        drug_history = user_input.lower()
         st.session_state.user_data['drug_history'] = user_input
         
         with st.status("최종 진단 실행 중...", expanded=True) as status:
             st.write("🧬 체질 데이터 통합 분석...")
             time.sleep(1.0)
-            st.write("💊 처방 프로토콜 검색...")
+            st.write("💊 약물 내성 평가...")
             time.sleep(1.3)
-            st.write("⚠ 리스크 평가 완료...")
+            st.write("⚠ 리스크 레벨 판정...")
             time.sleep(0.9)
             status.update(label="진단 완료", state="complete", expanded=False)
         
@@ -514,149 +502,153 @@ if user_input:
         name = st.session_state.user_data.get('name', '고객')
         diagnosis_type = st.session_state.user_data.get('type', '위열과다형')
         
+        # 약물 복용 여부에 따른 공포 강화
+        has_drug = "있" in drug_history or "먹" in drug_history or "복용" in drug_history
+        
         if diagnosis_type == "수독정체형":
-            diag_title = "수독 정체형 (부종 + 순환 장애)"
-            diag_desc = f"""{name}님의 몸은 **쓰레기 배출구가 막힌 상태**입니다.
-
-림프 순환이 70% 이상 저하되어 있으며,
-수분과 노폐물이 지방 세포에 결합되어 있습니다.
-
-**이 상태로 굶으면?**
-→ 지방은 그대로, 근육만 빠집니다.
-→ 얼굴은 더 푸석해지고, 몸은 더 붓습니다."""
-
-            prescription = "독소킬 + 지방사약 (순환촉진형)"
-            target = "림프 순환 정상화 → 노폐물 배출 → 지방 분해"
-            danger = f"""⚠ **주의**: 일반 식욕억제제는 {name}님께 **독**입니다.
-순환이 막힌 상태에서 억지로 막으면 **부작용 90%**입니다."""
+            diag_code = "VRT-W2"
+            diag_title = "수독 정체형 + 림프 순환 장애"
             
-            scores = {
-                "식욕지수": 35,
-                "대사효율": 45,
-                "독소축적": 95,
-                "스트레스": 40,
-                "순환장애": 90
-            }
+            if has_drug:
+                threat = f"""**{name}님, 솔직하게 말씀해 주셔서 감사합니다.**
+
+안타깝게도, 과거 약물 복용 이력이 있으시군요.
+
+분석 결과, {name}님의 몸은 지금
+**"쓰레기 배출구가 막힌 상태 + 약물 내성"**이 동시에 걸려 있습니다.
+
+일반 식욕억제제는 {name}님께 **독**입니다.
+순환이 막힌 상태에서 억지로 막으면 **부작용 90% 확률**입니다.
+
+지금 {name}님께 필요한 건 **식욕을 막는 게 아니라,**
+**림프 순환을 뚫고 노폐물을 배출하는 [순환 처방]**입니다."""
+            else:
+                threat = f"""**{name}님, 다행입니다.**
+
+과거 약물 이력이 없으시니, 내성 문제는 없습니다.
+
+하지만 지금 상태는 심각합니다.
+림프 순환이 70% 이상 저하되어
+**수분과 지방이 결합된 상태**입니다.
+
+이 상태로 굶으면?
+→ 지방은 그대로, 근육만 빠집니다.
+→ 얼굴은 더 푸석해지고, 몸은 더 붓습니다.
+
+{name}님께 필요한 건 **[림프 순환 촉진 + 독소 배출]** 처방입니다."""
+            
+            prescription = "독소킬 + 지방사약 (순환촉진형)"
+            scores = {"식욕지수": 35, "대사효율": 45, "독소축적": 95, "스트레스": 40, "순환장애": 90}
         
         elif diagnosis_type == "위열과다형":
-            diag_title = "위열 과다형 (가짜 배고픔)"
-            diag_desc = f"""{name}님의 뇌는 지금 **착각**하고 있습니다.
-
-위장에 과도한 열이 차면서
-포만 중추가 **"배고프다"**는 거짓 신호를 보내고 있어요.
-
-**이 상태로 식욕억제제 먹으면?**
-→ 일시적으로 막히지만, 위장 열은 그대로.
-→ 약 끊으면 폭식 → 요요 100%."""
-
-            prescription = "식탐사약 (위열 제거 + 식욕 정상화)"
-            target = "위장 열 해소 → 포만 중추 복구 → 자연스러운 식욕 조절"
-            danger = f"""⚠ **주의**: 이 상태로 방치하면 **당뇨 전단계**로 갑니다.
-{name}님, 지금이 골든타임입니다."""
+            diag_code = "VRT-H1"
+            diag_title = "위열 과다형 + 가짜 배고픔"
             
-            scores = {
-                "식욕지수": 95,
-                "대사효율": 50,
-                "독소축적": 40,
-                "스트레스": 60,
-                "순환장애": 45
-            }
+            if has_drug:
+                threat = f"""**{name}님, 솔직하게 말씀해 주셔서 감사합니다.**
+
+과거 약물 복용 이력을 확인했습니다.
+
+안타깝게도 {name}님의 몸은
+**"약물 내성"**이 생긴 상태입니다.
+
+일반 식욕억제제는 이제 안 듣습니다.
+약 끊으면? **요요 100% 확률**입니다.
+
+지금 {name}님께 필요한 건 **식욕을 막는 게 아니라,**
+**위장의 열을 제거해서 포만 중추를 복구하는 [대사 점화제]**입니다."""
+            else:
+                threat = f"""**{name}님, 다행입니다.**
+
+과거 약물 이력이 없으시군요.
+
+하지만 현재 상태는 심각합니다.
+위장에 열이 과도하게 차서
+**포만 중추가 고장 난 상태**입니다.
+
+이거 방치하면?
+→ 당뇨 전단계로 직행합니다.
+
+{name}님께 필요한 건 **[위열 제거 + 식욕 정상화]** 처방입니다."""
+            
+            prescription = "식탐사약 (위열 제거형)"
+            scores = {"식욕지수": 95, "대사효율": 50, "독소축적": 40, "스트레스": 60, "순환장애": 45}
         
         elif diagnosis_type == "냉증형대사장애":
-            diag_title = "냉증형 대사 장애 (난방 꺼진 몸)"
-            diag_desc = f"""{name}님의 몸은 **에너지를 안 씁니다.**
+            diag_code = "VRT-M3"
+            diag_title = "냉증형 대사 장애 + 초절전 모드"
+            
+            if has_drug:
+                threat = f"""**{name}님, 솔직하게 말씀해 주셔서 감사합니다.**
+
+과거 극단적 다이어트 이력을 확인했습니다.
+
+최악입니다.
+{name}님의 몸은 **"대사 스위치가 완전히 꺼진"** 상태입니다.
+
+이 상태에서는 굶어도 안 빠집니다.
+오히려 근육만 녹고 지방은 그대로입니다.
+
+{name}님께 필요한 건 **꺼진 불씨를 다시 살리는 [대사 점화제]**입니다."""
+            else:
+                threat = f"""**{name}님, 상태가 심각합니다.**
 
 기초대사량이 정상 대비 **60% 수준**으로 떨어졌습니다.
-그래서 적게 먹어도 안 빠지는 거예요.
 
-**이 상태로 굶으면?**
-→ 몸이 "비상 모드" 돌입.
-→ 근육 녹이고, 지방은 꽁꽁 숨김.
-→ **물만 먹어도 찌는 체질**로 고착."""
+이 상태로 굶으면?
+→ 몸이 "비상 모드" 돌입
+→ 근육 녹이고, 지방은 꽁꽁 숨김
+→ **"물만 먹어도 찌는 체질"**로 고착
 
-            prescription = "지방사약 (대사촉진형) + 온열처방"
-            target = "체온 상승 → 대사율 복구 → 지방 연소 활성화"
-            danger = f"""⚠ **위험**: 이 상태를 방치하면 **되돌릴 수 없습니다.**
-{name}님, 3개월 안에 처방하지 않으면 평생 다이어트 지옥입니다."""
+{name}님, 3개월 안에 처방하지 않으면 **평생 다이어트 지옥**입니다."""
             
-            scores = {
-                "식욕지수": 40,
-                "대사효율": 20,
-                "독소축적": 50,
-                "스트레스": 35,
-                "순환장애": 75
-            }
+            prescription = "지방사약 (대사촉진형) + 온열처방"
+            scores = {"식욕지수": 40, "대사효율": 20, "독소축적": 50, "스트레스": 35, "순환장애": 75}
         
         else:
-            diag_title = "간기 울결형 (스트레스 비만)"
-            diag_desc = f"""{name}님, 이건 **의지의 문제가 아닙니다.**
+            diag_code = "VRT-S4"
+            diag_title = "간기 울결형 + 스트레스 비만"
+            
+            if has_drug:
+                threat = f"""**{name}님, 솔직하게 말씀해 주셔서 감사합니다.**
 
-코르티솔(스트레스 호르몬) 과다 분비로
+약물 복용 이력을 확인했습니다.
+
+{name}님, 이건 **약으로 해결 안 됩니다.**
+자율신경이 망가진 상태에서 식욕억제제 먹으면
+**스트레스만 더 쌓이고 악순환**입니다.
+
+{name}님께 필요한 건 **[자율신경 정상화 + 폭식 차단]** 처방입니다."""
+            else:
+                threat = f"""**{name}님, 상태가 심각합니다.**
+
+코르티솔 과다 분비로
 **자율신경이 망가진 상태**입니다.
 
-그래서 낮엔 안 먹다가, 밤에 폭식하는 거예요.
+이 상태로 식욕억제제 먹으면?
+→ 낮엔 억지로 참음
+→ 밤에 폭발 → 폭식 → 자책 → 악순환
 
-**이 상태로 다이어트 약 먹으면?**
-→ 낮엔 억지로 참음.
-→ 밤에 폭발 → 폭식 → 자책 → 악순환."""
-
-            prescription = "소요산 + 지방사약 (신경안정형)"
-            target = "자율신경 정상화 → 폭식 차단 → 안정적 체중 감소"
-            danger = f"""⚠ **경고**: {name}님께 필요한 건 **식욕억제제가 아니라 신경 치료**입니다.
-약으로 막으면, 스트레스만 더 쌓입니다."""
+{name}님께 필요한 건 **[신경 안정 + 폭식 차단]** 처방입니다."""
             
-            scores = {
-                "식욕지수": 85,
-                "대사효율": 45,
-                "독소축적": 40,
-                "스트레스": 95,
-                "순환장애": 50
-            }
+            prescription = "소요산 + 지방사약 (신경안정형)"
+            scores = {"식욕지수": 85, "대사효율": 45, "독소축적": 40, "스트레스": 95, "순환장애": 50}
         
         chart = create_radar_chart(scores)
         
         result_html = f"""
 <div class='diagnosis-card'>
+    <div style='font-size:12px; color:#666; letter-spacing:2px; margin-bottom:10px;'>DIAGNOSTIC CODE: {diag_code}</div>
     <div class='diagnosis-type'>{diag_title}</div>
-    <div class='diagnosis-desc'>{diag_desc}</div>
+    <div class='diagnosis-desc'>{threat}</div>
 </div>
 
 <div class='alert-critical'>
-    <div class='alert-title'>⚠ CRITICAL WARNING</div>
-    <p style='font-size:16px; color:#FFB800; line-height:1.9;'>{danger}</p>
-</div>
-
-<div class='stats-grid'>
-    <div class='stat-item'>
-        <div class='stat-label'>최적 처방</div>
-        <div class='stat-value' style='font-size:18px;'>{prescription}</div>
-    </div>
-    <div class='stat-item'>
-        <div class='stat-label'>치료 목표</div>
-        <div class='stat-value' style='font-size:14px; color:#00BFFF;'>{target}</div>
-    </div>
-    <div class='stat-item'>
-        <div class='stat-label'>예상 기간</div>
-        <div class='stat-value'>3개월</div>
-    </div>
-    <div class='stat-item'>
-        <div class='stat-label'>성공률 (동일 체질 기준)</div>
-        <div class='stat-value'>91.7%</div>
-    </div>
-</div>
-
-<div style='margin-top:30px; padding:25px; background-color:#0a0a0a; border:2px solid #FF0000;'>
-    <p style='font-size:17px; color:#FF0000; font-weight:700; margin-bottom:15px;'>
-    ⏰ 골든타임: 72시간
-    </p>
-    <p style='font-size:15px; color:#FFB800; line-height:1.8;'>
-    {name}님, 솔직히 말씀드릴게요.<br><br>
-    <strong>이 상태를 더 방치하시면, 되돌릴 수 없습니다.</strong><br><br>
-    25년간 환자를 보면서 느낀 건,<br>
-    **"나중에 할게요"**라고 하신 분 중 90%는 영영 안 오세요.<br><br>
-    그리고 1년 뒤 더 심한 상태로 응급실에 실려 오시더라고요.<br><br>
-    {name}님은 그러지 마세요.<br><br>
-    <strong style='color:#00FF00;'>지금 바로 상담 신청하십시오.</strong>
+    <div class='alert-title'>⚠ 처방 대기 중</div>
+    <p style='font-size:16px; color:#FFB800; line-height:1.9;'>
+    {name}님께 맞는 특수 처방: <strong style='color:#00FF00;'>{prescription}</strong><br><br>
+    지금 바로 이 처방의 **성분 분석**과 **예상 감량치**를 확인하시겠습니까?<br>
+    (카카오톡으로 즉시 발송됩니다)
     </p>
 </div>
 """
@@ -688,25 +680,23 @@ if user_input:
         add_msg("assistant", final_cta)
         st.session_state.step = 99
 
-# ============================================
 # CONTACT FORM
-# ============================================
 if st.session_state.step == 99:
     st.markdown("<div style='height:30px;'></div>", unsafe_allow_html=True)
-    st.markdown("<h3 style='color:#FF0000; text-align:center; font-weight:900;'>⚠ 긴급 상담 신청</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color:#FF0000; text-align:center; font-weight:900;'>📱 카톡 리포트 신청 (무료)</h3>", unsafe_allow_html=True)
     
-    with st.form("urgent_contact"):
+    with st.form("kakao_report"):
         name_input = st.text_input("성함", value=st.session_state.user_data.get('name', ''), placeholder="실명 입력")
-        phone = st.text_input("연락처", placeholder="010-XXXX-XXXX")
+        phone = st.text_input("연락처 (카톡)", placeholder="010-XXXX-XXXX")
         memo = st.text_area("추가 전달사항 (선택)", placeholder="특이사항이나 급한 일정이 있으시면 알려주세요.", height=80)
         
-        submitted = st.form_submit_button("⚠ 지금 바로 상담 신청 (무료)")
+        submitted = st.form_submit_button("📲 지금 바로 카톡으로 받기 (무료)")
         
         if submitted:
             if name_input and phone:
-                with st.spinner("📞 상담 신청 접수 중..."):
+                with st.spinner("📞 리포트 발송 준비 중..."):
                     time.sleep(1.5)
-                st.success(f"✅ **{name_input}님, 접수 완료되었습니다!**\n\n담당 원장님이 24시간 내 연락드립니다.\n\n*전화 못 받으시면 카톡으로 안내해 드립니다.*")
+                st.success(f"✅ **{name_input}님, 발송 완료!**\n\n3분 내로 카톡으로 **[맞춤 처방 리포트]**가 발송됩니다.\n\n*못 받으셨으면 010-XXXX-XXXX로 문의주세요.*")
                 st.balloons()
             else:
                 st.error("⚠ 성함과 연락처를 모두 입력해 주세요.")
