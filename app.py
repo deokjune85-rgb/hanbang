@@ -123,21 +123,23 @@ if 'temp_input' not in st.session_state:
 AI_AVATAR = "🧬"
 USER_AVATAR = "👤"
 
-# [NEW] Claude-style 고급 스트리밍 효과 - 단어 단위로 부드럽게
-def claude_stream(text, speed=0.01):
-    """Claude처럼 부드러운 스트리밍 효과"""
+# [FIXED] Claude/Gemini-style 고급 스트리밍 (속도 조정 + 안정성 확보)
+def claude_stream(text, speed=0.03):
+    """Claude/Gemini처럼 천천히 부드러운 스트리밍 효과"""
     placeholder = st.empty()
     words = text.split(' ')
     display_text = ""
     
-    for i, word in enumerate(words):
-        display_text += word + " "
-        # 실시간 스트리밍처럼 보이도록 단어 단위로 출력, 끝에 ● 표시
-        placeholder.markdown(display_text + "●", unsafe_allow_html=True)
-        time.sleep(speed)
+    try:
+        for i, word in enumerate(words):
+            display_text += word + " "
+            # 스트리밍 중에는 끝에 ● 표시
+            placeholder.markdown(display_text + "●")
+            time.sleep(speed)
+    finally:
+        # 반드시 최종 출력 (인디케이터 완전 제거)
+        placeholder.markdown(display_text.strip())
     
-    # 최종 출력 (인디케이터 제거)
-    placeholder.markdown(display_text.strip())
     return display_text.strip()
 
 # [★핵심 수정★] 메시지 저장 시 'animated' 플래그 추가 (애니메이션 제어용)
@@ -173,19 +175,18 @@ for i, msg in enumerate(st.session_state.messages):
         is_last_message = (i == len(st.session_state.messages) - 1)
         
         if msg["role"] == "assistant" and not msg.get("animated") and is_last_message:
-            # HTML 콘텐츠는 애니메이션 없이 즉시 출력 (코드 노출 버그 방지)
+            # HTML 콘텐츠는 애니메이션 없이 즉시 출력
             if msg.get("html"):
                 st.markdown(msg["content"], unsafe_allow_html=True)
+                msg["animated"] = True  # HTML은 바로 완료 처리
             else:
-                # 텍스트 콘텐츠는 Claude-style 스트리밍 실행
+                # 일반 텍스트만 Claude-style 스트리밍 실행
                 claude_stream(msg["content"])
+                msg["animated"] = True  # 스트리밍 완료 처리
             
             # 이미지 출력
             if msg.get("image"):
                 st.image(msg["image"], use_column_width=True)
-                
-            # 애니메이션 완료 처리
-            msg["animated"] = True
         
         else:
             # 이전 메시지 또는 유저 메시지는 즉시 출력
@@ -363,12 +364,14 @@ if prompt:
         </div>
         """
         
-        # AI 응답 저장 (HTML 형식은 즉시 렌더링되도록 함 - 애니메이션 없음)
-        bot_say(result_html, html=True)
-        bot_say(evidence_header_html, html=True)
-        bot_say("", image=img) # 이미지는 별도 메시지로 처리
-        bot_say(evidence_caption_html, html=True)
-        bot_say(price_html, html=True)
+        # AI 응답 저장 - 모든 HTML을 하나로 통합하여 한 번에 출력
+        complete_result = result_html + evidence_header_html + f"""
+        <div style='text-align:center; margin: 15px 0;'>
+            <img src='{img}' style='max-width:100%; border-radius:8px;'/>
+        </div>
+        """ + evidence_caption_html + price_html
+        
+        bot_say(complete_result, html=True)
         
         st.session_state.step = 6
         # [★중요★] 상태 변경 후 스크립트 재실행
