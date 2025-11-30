@@ -123,25 +123,6 @@ if 'user_data' not in st.session_state:
 AI_AVATAR = "🧬" 
 USER_AVATAR = "👤"
 
-# [수정된 타이핑 함수 - 에러 처리 강화]
-def type_writer(text, speed=0.015):
-    """안정성이 보장된 타이핑 애니메이션"""
-    try:
-        placeholder = st.empty()
-        display_text = ""
-        
-        for char in text:
-            display_text += char
-            placeholder.markdown(display_text + "▍")
-            time.sleep(speed)
-        
-        # 최종 출력 (커서 제거)
-        placeholder.markdown(display_text)
-        return display_text
-    except Exception as e:
-        st.error(f"타이핑 애니메이션 오류: {e}")
-        return text
-
 def bot_say(content, image=None, html=False):
     """봇 메시지 저장"""
     st.session_state.messages.append({
@@ -173,7 +154,7 @@ if st.session_state.step == 0:
     bot_say(msg)
     st.session_state.step = 1
 
-# [수정된 채팅 히스토리 렌더링]
+# 채팅 히스토리 렌더링
 for msg in st.session_state.messages:
     avatar = AI_AVATAR if msg["role"] == "assistant" else USER_AVATAR
     with st.chat_message(msg["role"], avatar=avatar):
@@ -182,7 +163,6 @@ for msg in st.session_state.messages:
         else:
             st.markdown(msg["content"])
         
-        # 이미지가 있는 경우만 표시
         if msg.get("image"):
             st.image(msg["image"], use_column_width=True)
 
@@ -209,17 +189,16 @@ if st.session_state.step == 3:
         st.session_state.temp_input = "스트레스로 인한 폭식 증상이 있습니다."
         st.rerun()
 
-# [수정된 입력 처리]
+# 입력 처리 (temp_input 우선)
 input_disabled = (st.session_state.step == 6)
+prompt = None
 
-# temp_input 처리 로직 수정
 if st.session_state.get('temp_input'):
     prompt = st.session_state.temp_input
-    del st.session_state.temp_input  # 사용 후 즉시 삭제
-elif prompt := st.chat_input("데이터 또는 증상을 입력하십시오...", disabled=input_disabled):
-    pass  # prompt가 이미 설정됨
-else:
-    prompt = None
+    del st.session_state.temp_input  # 즉시 삭제
+
+if prompt is None:
+    prompt = st.chat_input("데이터 또는 증상을 입력하십시오...", disabled=input_disabled)
 
 if prompt:
     # 사용자 메시지 처리
@@ -227,9 +206,9 @@ if prompt:
     with st.chat_message("user", avatar=USER_AVATAR):
         st.markdown(prompt)
 
-    # [수정된 로직 컨트롤러 - 각 단계별 처리]
+    # 로직 컨트롤러
     if st.session_state.step == 1:
-        # 기본 정보 입력 단계
+        # 기본 정보 입력
         st.session_state.user_data['info'] = prompt
         
         with st.status("기본 데이터 처리 중...", expanded=False) as status:
@@ -240,17 +219,16 @@ if prompt:
         resp = "기본 데이터 입력 완료.\n\n핵심 질문입니다. 피험자가 호소하는 **다이어트 실패의 주된 원인**은 무엇입니까? (버튼 선택 또는 직접 입력)"
         
         with st.chat_message("assistant", avatar=AI_AVATAR):
-            type_writer(resp)
+            st.markdown(resp)
         
         bot_say(resp)
         st.session_state.step = 3
 
     elif st.session_state.step == 3:
-        # 증상 분석 단계
+        # 증상 분석
         txt = prompt.lower()
         cause = "기타"
         
-        # NLP 키워드 매칭
         if any(x in txt for x in ['식욕', '불가능', '조절']):
             cause = "식욕"
         elif any(x in txt for x in ['붓기', '붓습니다', '부종']):
@@ -280,13 +258,13 @@ if prompt:
         full_msg = f"{msg}\n\n마지막 질문입니다. 피험자의 **다이어트 약물(양약/한약) 복용 이력**이 있습니까?"
         
         with st.chat_message("assistant", avatar=AI_AVATAR):
-            type_writer(full_msg)
+            st.markdown(full_msg)
             
         bot_say(full_msg)
         st.session_state.step = 5
 
     elif st.session_state.step == 5:
-        # 최종 분석 단계
+        # 최종 분석
         st.session_state.user_data['history'] = prompt
         
         with st.status("최종 임상 데이터 분석 실행 중...", expanded=True) as status:
@@ -301,7 +279,7 @@ if prompt:
         with st.chat_message("assistant", avatar=AI_AVATAR):
             cause = st.session_state.user_data.get('cause', '대사')
             
-            # 원인별 결과 매핑
+            # 결과 매핑
             results = {
                 "식욕": {
                     "title": "위열 과다형 (Stomach Heat)",
@@ -352,17 +330,17 @@ if prompt:
             </div>
             """
             
-            # 결과 렌더링
+            # 결과 출력
             st.markdown(result_html, unsafe_allow_html=True)
             time.sleep(0.5)
             
-            # 임상 증거 이미지
+            # 임상 증거
             img = f"https://placehold.co/800x400/111/333?text=CLINICAL+EVIDENCE+{cause.upper()}"
             st.markdown("<div class='label-small' style='margin-top: 20px;'>CLINICAL EVIDENCE</div>", unsafe_allow_html=True)
             st.image(img, use_column_width=True)
             st.caption("동일 체질 환자의 3개월 임상 변화 데이터 (자연과한의원 제공)")
             
-            # 가격 정보
+            # 가격
             price_html = """
             <div style='margin-top:30px; border-top:1px solid #333; padding-top:20px;'>
                 <div class='label-small'>PRICING PLAN (VAT 별도)</div>
@@ -378,13 +356,13 @@ if prompt:
             """
             st.markdown(price_html, unsafe_allow_html=True)
             
-            # 메시지 히스토리에 저장
+            # 히스토리 저장
             bot_say(result_html, html=True)
             bot_say("임상 증거 및 가격 정보", image=img)
             
             st.session_state.step = 6
 
-# [최종 단계: 상담 접수]
+# 최종 상담 접수
 if st.session_state.step == 6:
     st.markdown("<div style='height:20px;'></div>", unsafe_allow_html=True)
     st.markdown("<div class='label-small'>REQUEST CONSULTATION</div>", unsafe_allow_html=True)
@@ -399,6 +377,5 @@ if st.session_state.step == 6:
         if st.form_submit_button("상담 접수 및 데이터 전송"):
             if name and phone:
                 st.success("데이터 전송 완료. 담당 의료진이 배정됩니다.")
-                # DB 저장 로직 추가 가능
             else:
                 st.warning("정확한 정보를 입력하십시오.")
