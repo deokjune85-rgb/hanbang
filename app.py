@@ -4,14 +4,22 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-# --- 1. 기본 설정 ---
-st.set_page_config(page_title="Veritas Medical Core", page_icon="🧬", layout="mobile")
+# --- 1. 기본 설정 (수정됨: layout="mobile" -> "centered") ---
+st.set_page_config(page_title="Veritas Medical Core", page_icon="🧬", layout="centered")
 
 # 스타일: 리얼 블랙 & 네온
 st.markdown("""
 <style>
     .stApp { background-color: #000000; color: #E0E0E0; font-family: sans-serif; }
-    .stChatInput { background-color: #111 !important; border: 1px solid #333 !important; }
+    
+    /* 입력창 스타일 */
+    .stChatInput { 
+        background-color: #111 !important; 
+        border: 1px solid #333 !important; 
+        color: #fff !important;
+    }
+    
+    /* 버튼 스타일 */
     div.stButton > button {
         background-color: #0A0A0A; border: 1px solid #333; color: #ccc;
         width: 100%; padding: 15px; text-align: left; border-radius: 8px; margin-bottom: 5px;
@@ -20,11 +28,16 @@ st.markdown("""
     div.stButton > button:hover {
         border-color: #00FF00; color: #00FF00; background-color: #051105;
     }
+    
     /* AI 메시지 강조 */
     .ai-msg { border-left: 3px solid #00BFFF; padding-left: 10px; margin: 10px 0; }
     .user-msg { text-align: right; color: #888; margin: 10px 0; }
     .highlight { color: #00FF00; font-weight: bold; }
     .alert { color: #FF4B4B; font-weight: bold; }
+    
+    /* 헤더 숨김 (깔끔하게) */
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
