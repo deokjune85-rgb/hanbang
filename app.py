@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 from datetime import datetime
 
 st.set_page_config(
-    page_title="아이엠디 한의원 AI 진단센터",
+    page_title="자연과한의원 AI 진단센터",
     page_icon="🧬",
     layout="centered",
     initial_sidebar_state="collapsed"
@@ -215,12 +215,12 @@ def create_radar_chart(scores):
     
     return fig
 
-st.markdown("<h2 style='text-align:center; color:#00FF00; font-weight:900; margin-bottom:5px;'>아이엠디 한의원 AI 진단센터</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align:center; color:#00FF00; font-weight:900; margin-bottom:5px;'>자연과한의원 AI 진단센터</h2>", unsafe_allow_html=True)
 st.markdown("<p style='text-align:center; font-size:12px; color:#666; margin-bottom:30px;'>25년 임상 데이터 기반 / 24시간 무료 진단</p>", unsafe_allow_html=True)
 st.divider()
 
 if st.session_state.step == 0:
-    init = """안녕하세요, 아이엠디 한의원입니다.
+    init = """안녕하세요, 자연과한의원입니다.
 
 혹시 이런 고민 있으시죠?
 
@@ -239,51 +239,11 @@ if st.session_state.step == 0:
     add_msg("assistant", init)
     st.session_state.step = 1
 
-def stream_line_by_line(text, delay=0.3):
-    """Gemini-style line-by-line fade-in animation"""
-    lines = text.split('\n')
-    placeholder = st.empty()
-    
-    displayed_lines = []
-    for i, line in enumerate(lines):
-        displayed_lines.append(line)
-        
-        # Create HTML with fade-in animation for last line
-        html_lines = []
-        for j, l in enumerate(displayed_lines):
-            if j == len(displayed_lines) - 1:
-                # Last line with fade-in
-                html_lines.append(f'<div style="animation: fadeIn 0.5s ease-in;">{l}</div>')
-            else:
-                # Already displayed lines
-                html_lines.append(f'<div>{l}</div>')
-        
-        full_html = f"""
-        <style>
-        @keyframes fadeIn {{
-            from {{ opacity: 0; transform: translateY(10px); }}
-            to {{ opacity: 1; transform: translateY(0); }}
-        }}
-        </style>
-        {''.join(html_lines)}
-        """
-        
-        placeholder.markdown(full_html, unsafe_allow_html=True)
-        time.sleep(delay)
-    
-    # Final render with plain markdown
-    time.sleep(0.3)
-    placeholder.markdown(text)
-    return text
-
 for msg in st.session_state.messages:
     avatar = AI_AVATAR if msg["role"] == "assistant" else USER_AVATAR
     with st.chat_message(msg["role"], avatar=avatar):
         if msg.get("html"):
             st.markdown(msg["content"], unsafe_allow_html=True)
-        elif msg["role"] == "assistant" and msg == st.session_state.messages[-1]:
-            # Only animate the last AI message
-            stream_line_by_line(msg["content"])
         else:
             st.markdown(msg["content"])
         
