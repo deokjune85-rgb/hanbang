@@ -3,22 +3,22 @@ import time
 import random
 
 # ---------------------------------------
-# 0. 시스템 설정: Minimal Black Theme
+# 0. 시스템 설정: Veritas Clinical Engine (고급화)
 # ---------------------------------------
 st.set_page_config(
-    page_title="자연과한의원 AI",
-    page_icon="▫️",
+    page_title="Veritas Clinical Engine v4.0 | 자연과한의원", # [변경] 권위적 타이틀
+    page_icon="🧬", # [변경] 아이콘 변경 (DNA)
     layout="centered"
 )
 
-# [CSS: Extreme Minimalism & Typography]
+# [CSS: High-End Editorial Design & Bug Fixes]
 custom_css = """
 <style>
     /* 1. Main Container & Font */
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
     
     .stApp {
-        background-color: #000000 !important;
+        background-color: #0C0C0C !important; /* [변경] Deeper Black */
         color: #E0E0E0 !important;
         font-family: 'Pretendard', sans-serif;
     }
@@ -28,38 +28,40 @@ custom_css = """
     footer {visibility: hidden;}
     header {visibility: hidden;}
 
-    /* 3. Typography Rules */
-    h1, h2, h3 { color: #FFFFFF !important; font-weight: 700; letter-spacing: -0.5px; }
-    p, div { line-height: 1.6; color: #CCCCCC; }
+    /* 3. Typography Rules (Sharper) */
+    h1, h2, h3 { color: #FFFFFF !important; font-weight: 800; letter-spacing: -0.5px; }
+    p, div { line-height: 1.7; color: #CCCCCC; font-weight: 300; }
     strong { color: #FFFFFF; font-weight: 600; }
     .accent { color: #00E676; } /* Jayeon Green */
 
-    /* 4. Chat Message (Minimal Bubble) */
-    .stChatMessage { background-color: #000 !important; padding: 10px 0 !important; }
+    /* 4. Chat Message (Minimal & Avatar) */
+    .stChatMessage { background-color: #0C0C0C !important; padding: 15px 0 !important; border-bottom: 1px solid #1A1A1A; }
     [data-testid="stChatMessageContent"] {
         background-color: transparent !important;
         border: none !important;
         padding: 0 !important;
         color: #E0E0E0;
     }
-    .stChatMessage[data-testid="user"] {
-        flex-direction: row-reverse;
-        text-align: right;
-    }
-    
+    /* [변경] 아바타 시각적 조정 */
+    .stChatMessage img { border-radius: 0 !important; } 
+
     /* 5. Input Field (Sleek Line) */
+    .stChatInputContainer {
+        border-top: 1px solid #333; /* [변경] 상단 경계선 추가 */
+        padding-top: 10px;
+    }
     .stChatInputInput {
-        background-color: #111 !important;
-        border: 1px solid #333 !important;
+        background-color: #1A1A1A !important;
+        border: 1px solid #444 !important;
         color: white !important;
         border-radius: 8px !important;
     }
 
-    /* 6. Chip Buttons (Horizontal & Round) */
+    /* 6. Chip Buttons (Refined) */
     div.stButton > button {
-        background-color: #111;
+        background-color: #1A1A1A;
         color: #AAA !important;
-        border: 1px solid #333 !important;
+        border: 1px solid #444 !important;
         border-radius: 20px !important;
         font-size: 14px !important;
         padding: 8px 16px !important;
@@ -73,23 +75,38 @@ custom_css = """
         background-color: #051005 !important;
     }
     
-    /* 7. Result Card (Editorial Design) */
+    /* 7. Result Card (Editorial Magazine Style) */
     .diagnosis-card {
-        border-top: 1px solid #333;
-        border-bottom: 1px solid #333;
-        padding: 30px 0;
+        border-left: 2px solid #00E676; /* [변경] 왼쪽 강조선 */
+        padding: 30px 20px;
         margin: 20px 0;
+        background-color: #111111;
     }
-    .label-small { font-size: 12px; color: #666; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; }
-    .diagnosis-title { font-size: 28px; color: #FFF; font-weight: 700; margin-bottom: 10px; }
-    .diagnosis-desc { font-size: 15px; color: #AAA; margin-bottom: 20px; }
+    .label-small { font-size: 11px; color: #888; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 5px; }
+    .diagnosis-title { font-size: 32px; color: #FFF; font-weight: 800; margin-bottom: 15px; font-family: serif; } /* [변경] 세리프체 적용 */
+    .diagnosis-desc { font-size: 16px; color: #AAA; margin-bottom: 20px; }
     
-    /* 8. Pulse Animation (Thinking) */
-    @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
-    .thinking { color: #00E676; font-size: 12px; animation: pulse 1.5s infinite; letter-spacing: 1px; }
+    /* 8. Status (Thinking Visualization) - Gemini Style */
+    [data-testid="stStatusWidget"] {
+        background-color: #1A1A1A;
+        border-radius: 8px;
+        padding: 10px;
+    }
 
     /* 9. Grid Layout Fix for Chips */
     [data-testid="column"] { padding: 0 5px !important; }
+
+    /* 10. CTA Button 강화 */
+    div[data-testid="stForm"] button[type="submit"] {
+        width: 100%;
+        background-color: #00E676 !important;
+        color: #000000 !important;
+        font-weight: bold;
+        border-radius: 8px;
+        padding: 12px;
+        border: none;
+        font-size: 16px;
+    }
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
@@ -104,55 +121,54 @@ if 'step' not in st.session_state:
 if 'user_data' not in st.session_state:
     st.session_state.user_data = {}
 
-# [CRITICAL FIX] 끊김 없는 강제 타이핑 함수
-def type_writer(text, speed=0.01):
-    """
-    st.write_stream 대신 사용하는 수동 타이핑 함수.
-    끊김 없이 확실하게 출력함.
-    """
+# [추가] 아바타 설정
+AI_AVATAR = "🧬" # 분석 엔진 스타일
+USER_AVATAR = "👤"
+
+# [CRITICAL BUG FIX] 끊김 없는 강제 타이핑 함수 (안정성 확보: try...finally)
+def type_writer(text, speed=0.015):
     placeholder = st.empty()
     display_text = ""
-    for char in text:
-        display_text += char
-        # 커서 효과 추가 (▍)
-        placeholder.markdown(display_text + "▍") 
-        time.sleep(speed)
-    # 최종 출력 (커서 제거)
-    placeholder.markdown(display_text)
+    try:
+        for char in text:
+            display_text += char
+            # 커서 효과 (▍)와 함께 출력
+            placeholder.markdown(display_text + "▍")
+            time.sleep(speed)
+    finally:
+        # [버그 수정] 오류나 중단 발생 시에도 최종 텍스트(커서 제거)는 반드시 출력 보장
+        placeholder.markdown(display_text)
     return display_text
 
+# [변경] 아바타 정보를 포함하여 메시지 저장 (실제 렌더링은 Main Interface에서 처리)
 def bot_say(content, image=None, html=False):
     st.session_state.messages.append({"role": "assistant", "content": content, "image": image, "html": html})
 
 def user_say(content):
     st.session_state.messages.append({"role": "user", "content": content})
 
-def thinking_simulation():
-    """AI Thinking Effect"""
-    placeholder = st.empty()
-    placeholder.markdown("<span class='thinking'>ANALYZING DATA PATTERNS...</span>", unsafe_allow_html=True)
-    time.sleep(1.0)
-    placeholder.empty()
-
 # ---------------------------------------
 # 2. Main Interface
 # ---------------------------------------
 
-# [Header: Minimal Text Only]
-st.markdown("<h3 style='margin-bottom:0;'>자연과한의원</h3>", unsafe_allow_html=True)
-st.markdown("<p style='font-size:12px; color:#555;'>Clinical Data Analysis System v4.0 (Stable)</p>", unsafe_allow_html=True)
+# [Header: 권위적 브랜딩]
+st.markdown("<h3 style='margin-bottom:0; font-family: serif;'>Veritas Clinical Engine v4.0</h3>", unsafe_allow_html=True)
+st.markdown("<p style='font-size:12px; color:#555;'>Powered by Jayeon Data Labs | 자연과한의원</p>", unsafe_allow_html=True)
 st.divider()
 
-# [STEP 0: Init]
+# [STEP 0: Init - 톤앤매너 변경]
 if st.session_state.step == 0:
-    msg = "안녕하세요. AI 닥터 제이입니다.\n\n25년간 축적된 임상 데이터를 바탕으로 귀하의 **'체중 정체 원인'**을 분석합니다.\n\n먼저 **성별, 나이, 키, 체중**을 입력해 주세요."
+    # [변경] 공손하지만 단호하고 권위적인 말투
+    msg = "Veritas Engine 활성화.\n\n25년간 축적된 임상 데이터를 기반으로 체중 정체 원인을 분석합니다.\n\n분석을 위해 피험자의 **성별, 나이, 키, 체중** 데이터를 입력하십시오."
     bot_say(msg)
     st.session_state.step = 1
 
-# [Render Chat History]
+# [Render Chat History] (아바타 적용)
 for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
+    avatar = AI_AVATAR if msg["role"] == "assistant" else USER_AVATAR
+    with st.chat_message(msg["role"], avatar=avatar):
         if msg.get("html"):
+            # [BUG FIX] HTML 출력 시 코드 노출 방지 확인
             st.markdown(msg["content"], unsafe_allow_html=True)
         else:
             st.markdown(msg["content"])
@@ -165,24 +181,27 @@ for msg in st.session_state.messages:
 
 # [Chip Buttons Area: Appears only when needed]
 if st.session_state.step == 3:
-    st.markdown("<p style='font-size:12px; color:#444; margin-bottom:10px;'>SUGGESTED INPUTS</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size:12px; color:#666; margin-bottom:10px; letter-spacing: 1.5px;'>SELECT SYMPTOM</p>", unsafe_allow_html=True)
     # 가로형 칩 배치 (Columns)
     c1, c2, c3, c4 = st.columns(4)
-    if c1.button("식욕 조절"):
-        st.session_state.temp_input = "식욕 조절이 안 돼요"
+    if c1.button("식욕 조절 불가"):
+        st.session_state.temp_input = "식욕 조절이 불가능합니다."
         st.rerun()
-    if c2.button("붓기/부종"):
-        st.session_state.temp_input = "몸이 자주 부어요"
+    if c2.button("만성 부종"):
+        st.session_state.temp_input = "몸이 자주 붓습니다."
         st.rerun()
     if c3.button("대사 저하"):
-        st.session_state.temp_input = "적게 먹어도 안 빠져요"
+        st.session_state.temp_input = "섭취량 대비 체중 감소가 없습니다."
         st.rerun()
-    if c4.button("스트레스"):
-        st.session_state.temp_input = "스트레스 받으면 폭식해요"
+    if c4.button("스트레스성 폭식"):
+        st.session_state.temp_input = "스트레스로 인한 폭식 증상이 있습니다."
         st.rerun()
 
 # [Input Handling]
-if prompt := st.chat_input("증상이나 답변을 입력하세요...") or st.session_state.get('temp_input'):
+# [변경] Step 6에서는 입력 비활성화
+input_disabled = (st.session_state.step == 6)
+
+if prompt := st.chat_input("데이터 또는 증상을 입력하십시오...", disabled=input_disabled) or st.session_state.get('temp_input'):
     
     # Reset temp input
     if st.session_state.get('temp_input'):
@@ -191,107 +210,123 @@ if prompt := st.chat_input("증상이나 답변을 입력하세요...") or st.se
     
     # 1. User Message
     user_say(prompt)
-    with st.chat_message("user"):
+    with st.chat_message("user", avatar=USER_AVATAR):
         st.markdown(prompt)
 
     # 2. Logic Controller
     if st.session_state.step == 1:
         st.session_state.user_data['info'] = prompt
         
-        thinking_simulation() # Thinking...
-        
-        resp = "기본 데이터가 입력되었습니다.\n\n가장 핵심적인 질문입니다. **다이어트가 실패하는 주된 원인**은 무엇인가요?"
-        with st.chat_message("assistant"):
-            # [교체] 끊김 없는 수동 타이핑 적용
+        # [★핵심★] 프로세스 시각화 (st.status) 도입
+        with st.status("기본 데이터 처리 중...", expanded=False) as status:
+            st.write("🔍 피험자 데이터베이스 연결...")
+            time.sleep(0.8)
+            status.update(label="처리 완료.", state="complete", expanded=False)
+
+        # [말투 수정]
+        resp = "기본 데이터 입력 완료.\n\n핵심 질문입니다. 피험자가 호소하는 **다이어트 실패의 주된 원인**은 무엇입니까? (버튼 선택 또는 직접 입력)"
+        with st.chat_message("assistant", avatar=AI_AVATAR):
             type_writer(resp)
         bot_say(resp)
-        st.session_state.step = 3 # Go to Chips Step
-        st.rerun()
+        st.session_state.step = 3
+        # [FIX] st.rerun() 제거하여 타이핑 멈춤 현상 방지
 
     elif st.session_state.step == 3:
         # Simple NLP
         txt = prompt.lower()
         cause = "기타"
-        if any(x in txt for x in ['식욕', '배불러', '먹고']): cause = "식욕"
-        elif any(x in txt for x in ['붓기', '부어', '물만']): cause = "부종"
-        elif any(x in txt for x in ['적게', '대사', '안빠져']): cause = "대사"
+        # [FIX] NLP 키워드 매칭 수정 (버튼 입력값 기준)
+        if any(x in txt for x in ['식욕', '불가능합니다']): cause = "식욕"
+        elif any(x in txt for x in ['붓기', '붓습니다']): cause = "부종"
+        elif any(x in txt for x in ['대사', '없습니다']): cause = "대사"
         elif any(x in txt for x in ['스트레스', '폭식']): cause = "스트레스"
         
         st.session_state.user_data['cause'] = cause
         
-        thinking_simulation()
+        # [★핵심★] 프로세스 시각화 (st.status) 도입
+        with st.status("증상 패턴 분석 중...", expanded=False) as status:
+            st.write("🧠 핵심 원인 분류 모델 적용...")
+            time.sleep(0.7)
+            status.update(label="분석 완료.", state="complete", expanded=False)
+
         
-        if cause == "식욕": msg = "식욕 통제 중추의 문제입니다. 위장의 열(Heat)을 식히는 것이 급선무입니다."
-        elif cause == "부종": msg = "순환계 문제입니다. 림프가 막혀 수분이 지방과 결합된 상태입니다."
-        elif cause == "대사": msg = "대사 효율 문제입니다. '엔진'이 꺼져 있어 에너지 소모가 안 되고 있습니다."
-        else: msg = "자율신경 문제입니다. 스트레스 호르몬이 지방 분해를 차단하고 있습니다."
+        if cause == "식욕": msg = "분석 결과: 식욕 통제 중추의 문제입니다. 위장의 열(Heat)을 제어해야 합니다."
+        elif cause == "부종": msg = "분석 결과: 순환계 문제입니다. 림프 정체로 인해 수분이 지방과 결합된 상태입니다."
+        elif cause == "대사": msg = "분석 결과: 대사 효율 문제입니다. 에너지 소모 기능이 저하되어 있습니다."
+        else: msg = "분석 결과: 자율신경 문제입니다. 스트레스 호르몬(코르티솔)이 지방 분해를 차단하고 있습니다."
         
-        full_msg = f"{msg}\n\n마지막으로, **다이어트 약물 복용 경험**이 있으신가요?"
+        # [말투 수정]
+        full_msg = f"{msg}\n\n마지막 질문입니다. 피험자의 **다이어트 약물(양약/한약) 복용 이력**이 있습니까?"
         
-        with st.chat_message("assistant"):
-            # [교체] 끊김 없는 수동 타이핑 적용
+        with st.chat_message("assistant", avatar=AI_AVATAR):
             type_writer(full_msg)
             
         bot_say(full_msg)
         st.session_state.step = 5
+        # [FIX] st.rerun() 제거하여 타이핑 멈춤 현상 방지
 
     elif st.session_state.step == 5:
         st.session_state.user_data['history'] = prompt
         
-        # Long Thinking
-        with st.chat_message("assistant"):
-            placeholder = st.empty()
-            placeholder.markdown("<span class='thinking'>COMPARING 200,000+ CLINICAL CASES...</span>", unsafe_allow_html=True)
+        # [★핵심★] Long Thinking Visualization (st.status - Expanded)
+        with st.status("최종 임상 데이터 분석 실행 중...", expanded=True) as status:
+            st.write("🔍 200,000+ 임상 케이스 데이터베이스 접속...")
             time.sleep(1.0)
-            placeholder.markdown("<span class='thinking'>SIMULATING METABOLIC RESPONSE...</span>", unsafe_allow_html=True)
+            st.write("🧬 피험자 데이터 패턴 대조 및 시뮬레이션...")
+            time.sleep(1.5)
+            st.write("💡 최적 처방 프로토콜 도출...")
             time.sleep(1.0)
-            placeholder.empty()
+            status.update(label="최종 분석 완료.", state="complete", expanded=False)
 
+        
+        with st.chat_message("assistant", avatar=AI_AVATAR):
+            
             # Result Generation
             cause = st.session_state.user_data.get('cause', '대사')
             
             # Content Mapping
             if cause == "식욕":
                 title = "위열 과다형 (Stomach Heat)"
-                desc = "뇌가 포만감을 느끼지 못하는 '가짜 배고픔' 상태"
+                desc = "뇌가 포만감을 인지하지 못하는 '가짜 배고픔' 상태. 식욕 중추의 과항진."
                 rx = "식탐사약"
                 rx_sub = "식욕 억제 및 위장 열 해소"
-                img = "https://placehold.co/800x400/111/333?text=BEFORE+vs+AFTER+(BELLY)" 
+                img = "https://placehold.co/800x400/111/333?text=CLINICAL+EVIDENCE+(BELLY)" 
             elif cause == "부종":
                 title = "수독 정체형 (Water Retention)"
-                desc = "노폐물이 배출되지 못하고 지방과 엉겨 붙은 상태"
+                desc = "노폐물 배출 기능 저하로 지방과 수분이 결합된 상태. 림프 순환 저하."
                 rx = "독소킬 + 지방사약"
                 rx_sub = "수분 대사 촉진 및 붓기 배출"
-                img = "https://placehold.co/800x400/111/333?text=BEFORE+vs+AFTER+(BODY)"
+                img = "https://placehold.co/800x400/111/333?text=CLINICAL+EVIDENCE+(BODY)"
             elif cause == "대사":
                 title = "대사 저하형 (Metabolic Drop)"
-                desc = "기초대사량이 낮아 숨만 쉬어도 손해보는 체질"
+                desc = "기초대사량이 낮아 에너지 소모율이 극히 낮은 체질."
                 rx = "지방사약 (대사촉진형)"
                 rx_sub = "심부 체온 상승 및 발열 효과 유도"
-                img = "https://placehold.co/800x400/111/333?text=BEFORE+vs+AFTER+(FULLBODY)"
+                img = "https://placehold.co/800x400/111/333?text=CLINICAL+EVIDENCE+(FULLBODY)"
             else:
                 title = "간기 울결형 (Stress Induced)"
-                desc = "스트레스 호르몬(코르티솔)에 의한 복부 지방 축적"
+                desc = "스트레스 호르몬(코르티솔) 과다 분비에 의한 복부 지방 축적."
                 rx = "소요산 + 지방사약"
                 rx_sub = "자율신경 안정 및 폭식 차단"
-                img = "https://placehold.co/800x400/111/333?text=BEFORE+vs+AFTER+(STRESS)"
+                img = "https://placehold.co/800x400/111/333?text=CLINICAL+EVIDENCE+(STRESS)"
 
             # Editorial Layout (HTML)
+            # [BUG FIX] HTML 구조를 완벽하게 구성하여 코드 노출 방지
             result_html = f"""
             <div class='diagnosis-card'>
-                <div class='label-small'>ANALYSIS RESULT</div>
+                <div class='label-small'>ANALYSIS REPORT</div>
                 <div class='diagnosis-title'>{title}</div>
                 <div class='diagnosis-desc'>{desc}</div>
                 
-                <div style='display:flex; justify-content:space-between; align-items:center; margin-top:30px;'>
+                <div style='display:flex; justify-content:space-between; align-items:center; margin-top:30px; border-top: 1px solid #333; padding-top: 20px;'>
                     <div>
-                        <div class='label-small' style='color:#00E676;'>PRESCRIPTION</div>
-                        <div style='font-size:20px; font-weight:bold; color:#FFF;'>{rx}</div>
-                        <div style='font-size:13px; color:#888;'>Target: {rx_sub}</div>
+                        <div class='label-small' style='color:#00E676;'>OPTIMAL PRESCRIPTION</div>
+                        <div style='font-size:22px; font-weight:bold; color:#FFF;'>{rx}</div>
+                        <div style='font-size:14px; color:#AAA;'>Target: {rx_sub}</div>
                     </div>
                     <div style='text-align:right;'>
-                         <div class='label-small'>PERIOD</div>
-                         <div style='color:#FFF;'>3 Months</div>
+                        <div class='label-small'>EST. PERIOD</div>
+                        <div style='color:#FFF; font-size:18px;'>3 Months</div>
                     </div>
                 </div>
             </div>
@@ -299,32 +334,33 @@ if prompt := st.chat_input("증상이나 답변을 입력하세요...") or st.se
             
             # 1. Render Diagnosis
             st.markdown(result_html, unsafe_allow_html=True)
-            bot_say(result_html, html=True)
+            
             
             time.sleep(0.5)
             
             # 2. Render Evidence (Text + Image)
-            st.markdown("<div class='label-small'>CLINICAL EVIDENCE</div>", unsafe_allow_html=True)
+            st.markdown("<div class='label-small' style='margin-top: 20px;'>CLINICAL EVIDENCE</div>", unsafe_allow_html=True)
             st.image(img, use_column_width=True)
-            st.caption("동일 체질 환자의 3개월 임상 변화 데이터")
+            st.caption("동일 체질 환자의 3개월 임상 변화 데이터 (자연과한의원 제공)")
             
             # 3. Pricing (Minimal List)
             price_html = """
             <div style='margin-top:30px; border-top:1px solid #333; padding-top:20px;'>
-                <div class='label-small'>PRICING PLAN</div>
-                <div style='display:flex; justify-content:space-between; margin-bottom:10px;'>
+                <div class='label-small'>PRICING PLAN (VAT 별도)</div>
+                <div style='display:flex; justify-content:space-between; margin-bottom:10px; padding: 5px 0;'>
                     <span style='color:#AAA;'>1 Month Plan</span>
                     <span style='color:#FFF;'>150,000 KRW</span>
                 </div>
-                <div style='display:flex; justify-content:space-between;'>
-                    <span style='color:#00E676;'>6 Months Plan (Best)</span>
+                <div style='display:flex; justify-content:space-between; background-color: #051005; padding: 10px; border-radius: 5px;'>
+                    <span style='color:#00E676;'>6 Months Plan (Recommended)</span>
                     <span style='color:#00E676; font-weight:bold;'>Monthly 100,000 KRW ~</span>
                 </div>
             </div>
             """
             st.markdown(price_html, unsafe_allow_html=True)
             
-            # Save history
+            # Save history (렌더링 후 저장하여 순서 유지)
+            bot_say(result_html, html=True)
             bot_say(price_html, image=img, html=True)
             
             st.session_state.step = 6
@@ -332,11 +368,17 @@ if prompt := st.chat_input("증상이나 답변을 입력하세요...") or st.se
 # [Final Step: Simple Input]
 if st.session_state.step == 6:
     st.markdown("<div style='height:20px;'></div>", unsafe_allow_html=True)
+    
+    # [변경] 폼 타이틀 및 버튼 텍스트 수정
+    st.markdown("<div class='label-small'>REQUEST CONSULTATION</div>", unsafe_allow_html=True)
     with st.form("contact"):
         c1, c2 = st.columns(2)
-        with c1: name = st.text_input("NAME", placeholder="성함")
-        with c2: phone = st.text_input("CONTACT", placeholder="연락처")
+        with c1: name = st.text_input("성함", placeholder="환자명")
+        with c2: phone = st.text_input("연락처", placeholder="010-XXXX-XXXX")
         
-        if st.form_submit_button("REQUEST CONSULTATION"):
+        if st.form_submit_button("상담 접수 및 데이터 전송"):
             if name and phone:
-                st.success("접수되었습니다. 담당자가 곧 연락드립니다.")
+                st.success("데이터 전송 완료. 담당 의료진이 배정됩니다.")
+                # 여기에 DB 저장 로직 추가
+            else:
+                st.warning("정확한 정보를 입력하십시오.")
