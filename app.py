@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 from datetime import datetime
 
 st.set_page_config(
-    page_title="누베베(가칭) 메디컬 코어",
+    page_title="아이엠디 아키텍처 메디컬 코어",
     page_icon="🧬",
     layout="centered",
     initial_sidebar_state="collapsed"
@@ -215,12 +215,12 @@ def create_radar_chart(scores):
     
     return fig
 
-st.markdown("<h2 style='text-align:center; color:#00FF00; font-weight:900; margin-bottom:5px;'>누베베(가칭) 메디컬 코어 AI 진단센터</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align:center; color:#00FF00; font-weight:900; margin-bottom:5px;'>아이엠디아키텍처 메디컬 코어 AI 진단센터</h2>", unsafe_allow_html=True)
 st.markdown("<p style='text-align:center; font-size:12px; color:#666; margin-bottom:30px;'>25년 임상 데이터 기반 / 24시간 무료 진단</p>", unsafe_allow_html=True)
 st.divider()
 
 if st.session_state.step == 0:
-    init = """안녕하세요, 누베베(가칭) 메디컬 코어입니다.
+    init = """안녕하세요, 아이엠디 아키텍처 메디컬 코어입니다.
 
 혹시 이런 고민 있으시죠?
 
