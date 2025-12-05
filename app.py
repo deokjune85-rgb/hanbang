@@ -106,15 +106,16 @@ section[data-testid="stSidebar"] {{
     color: #1F2937 !important;
     padding: 14px 18px !important;
     border-radius: 18px 18px 18px 4px !important;
-    margin: 8px 0 !important;
+    margin: 16px 0 8px 0 !important;
     max-width: 85% !important;
-    display: inline-block !important;
+    display: block !important;
     font-size: 16px !important;
     line-height: 1.5 !important;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
     border: none !important;
     outline: none !important;
     text-decoration: none !important;
+    clear: both !important;
 }}
 
 /* 모든 선 제거 */
@@ -144,8 +145,6 @@ section[data-testid="stSidebar"] {{
     display: inline-block !important;
     font-size: 15px !important;
     line-height: 1.4 !important;
-    float: right !important;
-    clear: both !important;
     border: none !important;
     outline: none !important;
 }}
@@ -187,8 +186,11 @@ section[data-testid="stSidebar"] {{
 }}
 
 .msg-right {{
-    text-align: right;
-    clear: both;
+    text-align: right !important;
+    clear: both !important;
+    display: block !important;
+    width: 100% !important;
+    margin-top: 16px !important;
 }}
 
 /* 버튼 영역 */
