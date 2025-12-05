@@ -460,7 +460,8 @@ if 'app_initialized' not in st.session_state:
 st.markdown("""
 <div class="title-box">
     <h1>IMD MEDICAL SYSTEM</h1>
-    <div class="sub">24시간 AI 한의사 상담</div>
+    <div class="sub">한의원 원장님의 진료 철학을 담은 '1차 AI 정밀 예진 시스템'입니다</div>
+    <div class="sub" style="font-size: 11px; color: #9CA3AF; margin-top: 4px;">내원 전, 환자분의 상태를 미리 분석하여 맞춤형 진료를 준비합니다 (소요시간: 1분)</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -485,16 +486,20 @@ st.markdown(chat_html, unsafe_allow_html=True)
 if len(conv_manager.get_history()) >= 6:  # 3회 이상 대화
     st.markdown(
         f"""
-        <div style="background: {COLOR_AI_BUBBLE}; padding: 20px; border-radius: 16px; margin: 20px 20px 120px 20px; text-align: center; border: 1px solid {COLOR_BORDER};">
-            <div style="font-size: 18px; font-weight: 600; color: {COLOR_PRIMARY}; margin-bottom: 8px;">
-                💬 더 자세한 상담을 원하시나요?
+        <div style="background: {COLOR_AI_BUBBLE}; padding: 24px; border-radius: 16px; margin: 20px 20px 120px 20px; text-align: center; border: 1px solid {COLOR_BORDER};">
+            <div style="font-size: 17px; font-weight: 600; color: {COLOR_PRIMARY}; margin-bottom: 10px;">
+                더 정확한 진단이 필요하신가요?
             </div>
-            <div style="font-size: 14px; color: #6B7280; margin-bottom: 16px;">
-                전문 한의사와 직접 상담하고 정확한 진단을 받아보세요
+            <div style="font-size: 14px; color: #6B7280; margin-bottom: 18px; line-height: 1.6;">
+                원장님께서 직접 맥진과 상담을 통해<br>
+                환자분의 상태를 정밀하게 분석해드립니다
             </div>
-            <a href="tel:02-1234-5678" style="display: inline-block; background: {COLOR_PRIMARY}; color: white; padding: 12px 32px; border-radius: 24px; text-decoration: none; font-weight: 600; font-size: 15px;">
-                전화 상담 예약
+            <a href="tel:02-1234-5678" style="display: inline-block; background: {COLOR_PRIMARY}; color: white; padding: 14px 40px; border-radius: 24px; text-decoration: none; font-weight: 600; font-size: 15px; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);">
+                진료 예약하기
             </a>
+            <div style="font-size: 12px; color: #9CA3AF; margin-top: 12px;">
+                평일 09:00-18:00 | 토요일 09:00-14:00
+            </div>
         </div>
         """,
         unsafe_allow_html=True
@@ -508,7 +513,7 @@ if len(conv_manager.get_history()) >= 6:  # 3회 이상 대화
 # ============================================
 # 입력창
 # ============================================
-user_input = st.chat_input("IMD입니다. 궁금하신 점을 물어보세요")
+user_input = st.chat_input("증상이나 궁금하신 점을 편하게 말씀해주세요")
 
 if user_input:
     conv_manager.add_message("user", user_input, metadata={"type": "text"})
