@@ -100,43 +100,53 @@ section[data-testid="stSidebar"] {{
     margin-bottom: 160px;
 }}
 
+/* AI 메시지 - PC */
 .ai-msg {{
     background: white !important;
     color: #1F2937 !important;
-    padding: 14px 18px;
-    border-radius: 18px 18px 18px 4px;
-    margin: 8px 0;
-    max-width: 85%;
-    display: inline-block;
+    padding: 14px 18px !important;
+    border-radius: 18px 18px 18px 4px !important;
+    margin: 8px 0 !important;
+    max-width: 85% !important;
+    display: inline-block !important;
     font-size: 15px !important;
-    line-height: 1.5;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.06) !important;
+    line-height: 1.5 !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
     border: none !important;
     outline: none !important;
+    text-decoration: none !important;
 }}
 
-/* 모든 가상요소 제거 */
+/* 모든 선 제거 */
+.ai-msg,
+.ai-msg *,
 .ai-msg::before,
 .ai-msg::after,
 .ai-msg *::before,
 .ai-msg *::after {{
-    content: none !important;
-    display: none !important;
     border: none !important;
-    background: none !important;
+    outline: none !important;
+    text-decoration: none !important;
+    box-shadow: none !important;
+}}
+
+.ai-msg {{
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
 }}
 
 .user-msg {{
-    background: {COLOR_USER_BUBBLE};
-    color: #1F2937;
-    padding: 12px 18px;
-    border-radius: 18px 18px 4px 18px;
-    margin: 8px 0;
-    max-width: 70%;
-    display: inline-block;
-    font-size: 14px;
-    float: right;
-    clear: both;
+    background: {COLOR_USER_BUBBLE} !important;
+    color: #1F2937 !important;
+    padding: 12px 18px !important;
+    border-radius: 18px 18px 4px 18px !important;
+    margin: 8px 0 !important;
+    max-width: 70% !important;
+    display: inline-block !important;
+    font-size: 14px !important;
+    float: right !important;
+    clear: both !important;
+    border: none !important;
+    outline: none !important;
 }}
 
 .user-msg::before,
@@ -207,11 +217,21 @@ section[data-testid="stSidebar"] {{
 .stChatInput input {{
     color: #1F2937 !important;
     background: white !important;
+    -webkit-text-fill-color: #1F2937 !important;
 }}
 
 .stChatInput input::placeholder {{
     color: #9CA3AF !important;
     font-size: 15px !important;
+    opacity: 1 !important;
+    -webkit-text-fill-color: #9CA3AF !important;
+}}
+
+/* Streamlit 기본 input 스타일 덮어쓰기 */
+.stChatInput textarea,
+.stChatInput input[type="text"] {{
+    color: #1F2937 !important;
+    -webkit-text-fill-color: #1F2937 !important;
 }}
 
 /* 푸터 (가로 100% 흰색) */
