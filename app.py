@@ -45,6 +45,14 @@ def load_css():
         background: {COLOR_BG};
         font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
         color: {COLOR_TEXT};
+        padding: 0 !important;
+    }}
+    
+    /* 상단/하단 여백 제거 */
+    .main .block-container {{
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
+        max-width: 800px;
     }}
     
     /* 타이틀 */
@@ -55,39 +63,35 @@ def load_css():
         margin-bottom: 8px;
     }}
     
-    h2, h3 {{
-        color: {COLOR_TEXT} !important;
-        font-weight: 600;
-    }}
-    
     /* 서브타이틀 */
     .subtitle {{
         text-align: center;
         color: #6B7280;
         font-size: 15px;
-        margin-bottom: 32px;
+        margin-bottom: 24px;
     }}
     
     /* 채팅 컨테이너 */
     .chat-container {{
-        max-width: 720px;
-        margin: 24px auto;
-        padding-bottom: 100px;
+        margin: 16px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
     }}
     
     /* AI 메시지 버블 */
     .chat-bubble-ai {{
         background: {COLOR_AI_BUBBLE};
         color: {COLOR_TEXT} !important;
-        padding: 18px 20px;
+        padding: 16px 18px;
         border-radius: 16px 16px 16px 4px;
-        margin-bottom: 12px;
         width: fit-content;
-        max-width: 85%;
+        max-width: 75%;
         font-size: 15px;
         line-height: 1.6;
         border: 1px solid {COLOR_BORDER};
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        margin-right: auto;
     }}
     
     /* 사용자 메시지 버블 */
@@ -96,13 +100,12 @@ def load_css():
         color: {COLOR_TEXT} !important;
         padding: 14px 18px;
         border-radius: 16px 16px 4px 16px;
-        margin-bottom: 12px;
-        margin-left: auto;
         width: fit-content;
-        max-width: 75%;
+        max-width: 70%;
         font-size: 15px;
         font-weight: 500;
         border: 1px solid {COLOR_PRIMARY};
+        margin-left: auto;
     }}
     
     /* 추천 버튼 */
@@ -111,12 +114,12 @@ def load_css():
         background: white;
         color: {COLOR_PRIMARY} !important;
         border: 1.5px solid {COLOR_BORDER};
-        padding: 12px 16px;
+        padding: 12px 14px;
         font-size: 14px;
         border-radius: 10px;
         font-weight: 500;
         transition: all 0.2s ease;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
     }}
     
     .stButton > button:hover {{
@@ -153,9 +156,9 @@ def load_css():
     /* 섹션 제목 */
     .section-title {{
         color: {COLOR_PRIMARY};
-        font-size: 17px;
+        font-size: 16px;
         font-weight: 600;
-        margin: 20px 0 12px 0;
+        margin: 16px 0 10px 0;
         text-align: center;
     }}
     
@@ -163,6 +166,17 @@ def load_css():
     hr {{
         border-color: {COLOR_BORDER};
         opacity: 1;
+        margin: 20px 0;
+    }}
+    
+    /* 푸터 */
+    .footer {{
+        text-align: center;
+        color: #9CA3AF;
+        font-size: 12px;
+        padding: 20px 0;
+        border-top: 1px solid {COLOR_BORDER};
+        margin-top: 20px;
     }}
     </style>
     """
@@ -185,7 +199,7 @@ if len(conv_manager.get_history()) == 0:
 # ============================================
 # 3. 헤더
 # ============================================
-st.title(f"🏥 {HOSPITAL_NAME}")
+st.title(f"{HOSPITAL_NAME}")
 st.markdown('<p class="subtitle">24시간 AI 한의사 상담</p>', unsafe_allow_html=True)
 
 # ============================================
@@ -207,11 +221,18 @@ if not conv_manager.is_ready_for_conversion():
     
     buttons = conv_manager.get_recommended_buttons()
     
-    cols = st.columns(3)
+    # 4개 버튼을 2x2 그리드로
+    col1, col2 = st.columns(2)
     
-    for idx, button_text in enumerate(buttons[:3]):
-        with cols[idx]:
+    for idx, button_text in enumerate(buttons[:4]):
+        target_col = col1 if idx % 2 == 0 else col2
+        with target_col:
             if st.button(button_text, key=f"quick_{idx}"):
+                # 전화 상담 버튼 처리
+                if "전화" in button_text:
+                    st.info("전화 상담: 02-1234-5678 (평일 09:00-18:00)")
+                    continue
+                
                 conv_manager.add_message("user", button_text, metadata={"type": "button"})
                 
                 context = conv_manager.get_context()
@@ -247,7 +268,7 @@ if user_input:
 # ============================================
 if conv_manager.is_ready_for_conversion() and conv_manager.get_context()['stage'] != 'complete':
     st.markdown("---")
-    st.markdown('<p class="section-title">📅 예약 신청</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-title">예약 신청</p>', unsafe_allow_html=True)
     st.markdown("<p style='text-align:center; color:#6B7280; font-size:14px;'>빠른 시일 내 연락드리겠습니다</p>", unsafe_allow_html=True)
     
     with st.form("reservation_form"):
@@ -260,7 +281,7 @@ if conv_manager.is_ready_for_conversion() and conv_manager.get_context()['stage'
         symptom = st.text_area("주요 증상 *", placeholder="예: 허리 통증, 다이어트 상담 등", height=80)
         preferred_date = st.selectbox("희망 방문 시기 *", PREFERRED_DATE_OPTIONS)
         
-        submitted = st.form_submit_button("✅ 예약 신청", use_container_width=True)
+        submitted = st.form_submit_button("예약 신청", use_container_width=True)
         
         if submitted:
             if not name or not contact or not symptom:
@@ -280,18 +301,18 @@ if conv_manager.is_ready_for_conversion() and conv_manager.get_context()['stage'
                 
                 if success:
                     completion_msg = f"""
-### ✅ 예약 신청이 완료되었습니다
+예약 신청이 완료되었습니다
 
-**{name}님**, 감사합니다.
+{name}님, 감사합니다.
 
-빠른 시일 내 **{contact}**로 연락드려 예약 일정을 확정하겠습니다.
+빠른 시일 내 {contact}로 연락드려 예약 일정을 확정하겠습니다.
 
-**증상**: {symptom}  
-**희망 시기**: {preferred_date}
+증상: {symptom}  
+희망 시기: {preferred_date}
 
 ---
 
-**진료 전 준비사항:**
+진료 전 준비사항:
 - 기존 진단서/검사 결과가 있다면 지참해주세요
 - 복용 중인 약이 있다면 말씀해주세요
 - 편안한 복장으로 내원해주세요
@@ -316,12 +337,12 @@ if conv_manager.get_context()['stage'] == 'complete':
     col1, col2 = st.columns(2)
     
     with col1:
-        if st.button("🔄 새 상담 시작", use_container_width=True):
+        if st.button("새 상담 시작", use_container_width=True):
             conv_manager.reset_conversation()
             st.rerun()
     
     with col2:
-        if st.button("📋 상담 내역 보기", use_container_width=True):
+        if st.button("상담 내역 보기", use_container_width=True):
             with st.expander("상담 요약", expanded=True):
                 st.markdown(conv_manager.get_summary())
 
@@ -331,10 +352,9 @@ if conv_manager.get_context()['stage'] == 'complete':
 st.markdown("---")
 st.markdown(
     f"""
-    <div style='text-align:center; color:#9CA3AF; font-size:12px; padding: 20px 0;'>
+    <div class='footer'>
         <b style='color:{COLOR_PRIMARY};'>{HOSPITAL_NAME}</b><br>
-        24시간 AI 상담 | 실제 예약은 진료시간 내 가능합니다<br>
-        © 2024 IMD Medical System. Powered by Claude AI.
+        24시간 AI 상담 | 실제 예약은 진료시간 내 가능합니다
     </div>
     """,
     unsafe_allow_html=True
