@@ -43,7 +43,8 @@ st.markdown(f"""
 
 .main .block-container {{
     padding: 0 !important;
-    max-width: 100% !important;
+    max-width: 720px !important;
+    margin: 0 auto !important;
 }}
 
 header, .stDeployButton {{
@@ -53,48 +54,53 @@ header, .stDeployButton {{
 /* 타이틀 */
 .title-box {{
     text-align: center;
-    padding: 32px 20px 20px 20px;
+    padding: 24px 20px 16px 20px;
     background: white;
 }}
 
 .title-box h1 {{
     font-family: Arial, sans-serif !important;
-    font-size: 28px !important;
+    font-size: 26px !important;
     font-weight: 700 !important;
     color: {COLOR_PRIMARY} !important;
     margin: 0 !important;
+    letter-spacing: 0.5px !important;
 }}
 
 .title-box .sub {{
     font-size: 13px;
-    color: #6B7280;
+    color: #4B5563;
     margin-top: 6px;
 }}
 
 /* 채팅 영역 */
 .chat-area {{
-    padding: 20px;
+    padding: 16px 20px 20px 20px;
     background: white;
-    min-height: 300px;
+    min-height: 200px;
     margin-bottom: 160px;
 }}
 
 .ai-msg {{
-    background: {COLOR_AI_BUBBLE};
+    background: white;
+    color: #1F2937;
     padding: 14px 18px;
     border-radius: 18px 18px 18px 4px;
-    margin: 10px 0;
-    max-width: 75%;
+    margin: 8px 0;
+    max-width: 85%;
     display: inline-block;
     font-size: 14px;
     line-height: 1.5;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid #F3F4F6;
 }}
 
 .user-msg {{
     background: {COLOR_USER_BUBBLE};
+    color: #1F2937;
     padding: 12px 18px;
     border-radius: 18px 18px 4px 18px;
-    margin: 10px 0;
+    margin: 8px 0;
     max-width: 70%;
     display: inline-block;
     font-size: 14px;
@@ -109,7 +115,7 @@ header, .stDeployButton {{
 
 /* 버튼 영역 */
 .btn-area {{
-    padding: 16px 20px;
+    padding: 0 20px 20px 20px;
     background: white;
     margin-bottom: 160px;
 }}
@@ -135,7 +141,7 @@ header, .stDeployButton {{
 }}
 
 .stButton > button:hover {{
-    background: {COLOR_AI_BUBBLE} !important;
+    background: #F9FAFB !important;
     border-color: {COLOR_PRIMARY} !important;
 }}
 
@@ -143,8 +149,10 @@ header, .stDeployButton {{
 .stChatInput {{
     position: fixed !important;
     bottom: 60px !important;
-    left: 0 !important;
-    right: 0 !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 100% !important;
+    max-width: 720px !important;
     background: white !important;
     padding: 10px 20px !important;
     box-shadow: 0 -2px 6px rgba(0,0,0,0.08) !important;
@@ -152,9 +160,14 @@ header, .stDeployButton {{
 }}
 
 .stChatInput > div {{
-    border: 1px solid {COLOR_BORDER} !important;
+    border: 1px solid #E5E7EB !important;
     border-radius: 24px !important;
     background: white !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
+}}
+
+.stChatInput input {{
+    color: #1F2937 !important;
 }}
 
 .stChatInput input::placeholder {{
@@ -166,8 +179,10 @@ header, .stDeployButton {{
 .footer {{
     position: fixed;
     bottom: 0;
-    left: 0;
-    right: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 720px;
     background: white;
     padding: 12px 20px;
     text-align: center;
