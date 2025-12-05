@@ -94,10 +94,10 @@ section[data-testid="stSidebar"] {{
 
 /* 채팅 영역 */
 .chat-area {{
-    padding: 12px 20px 16px 20px;
+    padding: 12px 20px 8px 20px;
     background: white !important;
     min-height: 150px;
-    margin-bottom: 160px;
+    margin-bottom: 150px;
 }}
 
 /* AI 메시지 - PC */
@@ -203,6 +203,7 @@ section[data-testid="stSidebar"] {{
     padding: 10px 0 !important;
     box-shadow: 0 -2px 6px rgba(0,0,0,0.08) !important;
     z-index: 999 !important;
+    margin: 0 !important;
 }}
 
 .stChatInput > div {{
@@ -221,10 +222,10 @@ section[data-testid="stSidebar"] {{
 }}
 
 .stChatInput input::placeholder {{
-    color: #9CA3AF !important;
+    color: #D1D5DB !important;
     font-size: 15px !important;
     opacity: 1 !important;
-    -webkit-text-fill-color: #9CA3AF !important;
+    -webkit-text-fill-color: #D1D5DB !important;
 }}
 
 /* Streamlit 기본 input 스타일 덮어쓰기 */
@@ -435,15 +436,17 @@ st.markdown("""
 # ============================================
 # 채팅 히스토리
 # ============================================
-st.markdown('<div class="chat-area">', unsafe_allow_html=True)
+chat_html = '<div class="chat-area">'
 
 for msg in conv_manager.get_history():
     if msg['role'] == 'ai':
-        st.markdown(f'<div class="ai-msg">{msg["text"]}</div>', unsafe_allow_html=True)
+        chat_html += f'<div class="ai-msg">{msg["text"]}</div>'
     else:
-        st.markdown(f'<div class="msg-right"><span class="user-msg">{msg["text"]}</span></div>', unsafe_allow_html=True)
+        chat_html += f'<div class="msg-right"><span class="user-msg">{msg["text"]}</span></div>'
 
-st.markdown('</div>', unsafe_allow_html=True)
+chat_html += '</div>'
+
+st.markdown(chat_html, unsafe_allow_html=True)
 
 # ============================================
 # 버튼 (삭제됨)
