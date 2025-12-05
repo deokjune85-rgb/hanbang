@@ -72,30 +72,31 @@ section[data-testid="stSidebar"] {{
 /* 타이틀 */
 .title-box {{
     text-align: center;
-    padding: 24px 20px 16px 20px;
+    padding: 20px 20px 12px 20px;
     background: white;
 }}
 
 .title-box h1 {{
     font-family: Arial, sans-serif !important;
-    font-size: 26px !important;
+    font-size: 24px !important;
     font-weight: 700 !important;
     color: {COLOR_PRIMARY} !important;
     margin: 0 !important;
     letter-spacing: 0.5px !important;
+    white-space: nowrap !important;
 }}
 
 .title-box .sub {{
-    font-size: 13px;
+    font-size: 12px;
     color: #4B5563;
-    margin-top: 6px;
+    margin-top: 4px;
 }}
 
 /* 채팅 영역 */
 .chat-area {{
-    padding: 16px 20px 20px 20px;
+    padding: 12px 20px 16px 20px;
     background: white !important;
-    min-height: 200px;
+    min-height: 150px;
     margin-bottom: 160px;
 }}
 
@@ -139,7 +140,7 @@ section[data-testid="stSidebar"] {{
 
 /* 버튼 영역 */
 .btn-area {{
-    padding: 0 20px 20px 20px;
+    padding: 0 20px 16px 20px;
     background: white;
     margin-bottom: 160px;
 }}
@@ -149,7 +150,7 @@ section[data-testid="stSidebar"] {{
     font-size: 13px;
     font-weight: 600;
     color: {COLOR_PRIMARY};
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }}
 
 .stButton > button {{
@@ -246,6 +247,89 @@ div[data-testid="stHorizontalBlock"], .row-widget {{
 /* 스피너 등 모든 요소 */
 div[data-testid="stspinner"] {{
     background: white !important;
+}}
+
+/* ========== 모바일 반응형 ========== */
+@media (max-width: 768px) {{
+    /* 타이틀 작게 */
+    .title-box {{
+        padding: 16px 16px 10px 16px;
+    }}
+    
+    .title-box h1 {{
+        font-size: 20px !important;
+        line-height: 1.2 !important;
+    }}
+    
+    .title-box .sub {{
+        font-size: 11px;
+        margin-top: 4px;
+    }}
+    
+    /* 채팅 영역 여백 축소 */
+    .chat-area {{
+        padding: 10px 16px 14px 16px;
+        min-height: 120px;
+    }}
+    
+    .ai-msg {{
+        font-size: 14px !important;
+        padding: 12px 16px;
+        max-width: 90%;
+    }}
+    
+    .user-msg {{
+        font-size: 13px;
+        padding: 10px 16px;
+        max-width: 75%;
+    }}
+    
+    /* 버튼 영역 간격 축소 */
+    .btn-area {{
+        padding: 0 16px 14px 16px;
+    }}
+    
+    .btn-title {{
+        font-size: 12px;
+        margin-bottom: 8px;
+    }}
+    
+    .stButton > button {{
+        padding: 11px !important;
+        font-size: 13px !important;
+        margin-bottom: 6px !important;
+    }}
+    
+    /* 입력창 */
+    .stChatInput {{
+        padding: 8px 12px !important;
+    }}
+    
+    .stChatInput > div {{
+        max-width: 100% !important;
+        margin: 0 !important;
+    }}
+    
+    .stChatInput input::placeholder {{
+        font-size: 13px !important;
+    }}
+    
+    /* 푸터 */
+    .footer {{
+        padding: 10px 16px;
+        font-size: 10px;
+    }}
+}}
+
+/* 작은 모바일 (iPhone SE 등) */
+@media (max-width: 400px) {{
+    .title-box h1 {{
+        font-size: 18px !important;
+    }}
+    
+    .ai-msg {{
+        font-size: 13px !important;
+    }}
 }}
 </style>
 """, unsafe_allow_html=True)
