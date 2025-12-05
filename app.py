@@ -467,26 +467,6 @@ st.markdown("""
 # ============================================
 # 채팅 히스토리
 # ============================================
-# Thinking 상태 확인 및 처리
-has_thinking = False
-if conv_manager.get_history():
-    last_msg = conv_manager.get_history()[-1]
-    if last_msg.get('role') == 'system' and last_msg.get('metadata', {}).get('type') == 'thinking':
-        has_thinking = True
-        
-        # AI 응답 생성
-        context = conv_manager.get_context()
-        history = conv_manager.get_formatted_history(for_llm=True)
-        user_msg = conv_manager.get_history()[-2]['text']  # thinking 바로 전 메시지
-        
-        time.sleep(1.5)
-        ai_response = generate_ai_response(user_msg, context, history)
-        
-        # thinking 제거하고 AI 응답 추가
-        conv_manager.remove_last_thinking()
-        conv_manager.add_message("ai", ai_response)
-        st.rerun()
-
 chat_html = '<div class="chat-area">'
 
 for msg in conv_manager.get_history():
@@ -494,21 +474,31 @@ for msg in conv_manager.get_history():
         chat_html += f'<div class="ai-msg">{msg["text"]}</div>'
     elif msg['role'] == 'user':
         chat_html += f'<div class="msg-right"><span class="user-msg">{msg["text"]}</span></div>'
-    elif msg['role'] == 'system' and msg.get('metadata', {}).get('type') == 'thinking':
-        chat_html += '''
-        <div class="thinking-process">
-            <div class="thinking-title">✨ Analyzing your question...</div>
-            <div class="thinking-content">
-            • Reviewing symptoms and medical history<br>
-            • Analyzing treatment options<br>
-            • Preparing personalized consultation
-            </div>
-        </div>
-        '''
 
 chat_html += '</div>'
 
 st.markdown(chat_html, unsafe_allow_html=True)
+
+# ============================================
+# 자동 CTA (3회 이상 대화 시)
+# ============================================
+if len(conv_manager.get_history()) >= 6:  # 3회 이상 대화
+    st.markdown(
+        f"""
+        <div style="background: {COLOR_AI_BUBBLE}; padding: 20px; border-radius: 16px; margin: 20px 20px 120px 20px; text-align: center; border: 1px solid {COLOR_BORDER};">
+            <div style="font-size: 18px; font-weight: 600; color: {COLOR_PRIMARY}; margin-bottom: 8px;">
+                💬 더 자세한 상담을 원하시나요?
+            </div>
+            <div style="font-size: 14px; color: #6B7280; margin-bottom: 16px;">
+                전문 한의사와 직접 상담하고 정확한 진단을 받아보세요
+            </div>
+            <a href="tel:02-1234-5678" style="display: inline-block; background: {COLOR_PRIMARY}; color: white; padding: 12px 32px; border-radius: 24px; text-decoration: none; font-weight: 600; font-size: 15px;">
+                전화 상담 예약
+            </a>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 # ============================================
 # 버튼 (삭제됨)
@@ -521,13 +511,15 @@ st.markdown(chat_html, unsafe_allow_html=True)
 user_input = st.chat_input("IMD입니다. 궁금하신 점을 물어보세요")
 
 if user_input:
-    # 사용자 메시지 추가
     conv_manager.add_message("user", user_input, metadata={"type": "text"})
     
-    # 생각 과정 임시 추가
-    conv_manager.add_message("system", "thinking", metadata={"type": "thinking"})
+    context = conv_manager.get_context()
+    history = conv_manager.get_formatted_history(for_llm=True)
     
-    # 화면 갱신 (생각 과정 표시)
+    time.sleep(1.0)
+    ai_response = generate_ai_response(user_input, context, history)
+    
+    conv_manager.add_message("ai", ai_response)
     st.rerun()
 
 # ============================================
