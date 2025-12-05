@@ -60,6 +60,13 @@ class ConversationManager:
             return history[-limit:]
         return history
     
+    def remove_last_thinking(self):
+        """마지막 thinking 메시지 제거"""
+        if st.session_state.chat_history:
+            last_msg = st.session_state.chat_history[-1]
+            if last_msg.get('role') == 'system' and last_msg.get('metadata', {}).get('type') == 'thinking':
+                st.session_state.chat_history.pop()
+    
     def get_formatted_history(self, for_llm: bool = False, last_n: int = 10) -> str:
         """
         포맷된 히스토리 문자열 반환
