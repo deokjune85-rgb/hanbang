@@ -110,13 +110,14 @@ section[data-testid="stSidebar"] {{
     display: inline-block;
     font-size: 15px !important;
     line-height: 1.5;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    border: 1px solid #F3F4F6;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
+    border: 1px solid #F3F4F6 !important;
 }}
 
-/* 점점이 제거 */
+/* 점점이 + 까만줄 완전 제거 */
 .ai-msg::before,
 .ai-msg::after {{
+    content: none !important;
     display: none !important;
 }}
 
@@ -131,6 +132,12 @@ section[data-testid="stSidebar"] {{
     font-size: 14px;
     float: right;
     clear: both;
+}}
+
+.user-msg::before,
+.user-msg::after {{
+    content: none !important;
+    display: none !important;
 }}
 
 .msg-right {{
@@ -266,15 +273,15 @@ div[data-testid="stspinner"] {{
         gap: 0 !important;
     }}
     
-    /* 타이틀 작게 + 상단 여백 최소화 */
+    /* 타이틀 극한 압축 */
     .title-box {{
-        padding: 4px 16px 4px 16px !important;
+        padding: 2px 16px 2px 16px !important;
         margin: 0 !important;
     }}
     
     .title-box h1 {{
         font-size: 20px !important;
-        line-height: 1.2 !important;
+        line-height: 1.1 !important;
         margin: 0 !important;
     }}
     
@@ -283,25 +290,25 @@ div[data-testid="stspinner"] {{
         margin: 2px 0 0 0 !important;
     }}
     
-    /* 채팅 영역 여백 최소화 */
+    /* 채팅 영역 극한 압축 */
     .chat-area {{
-        padding: 4px 16px 6px 16px !important;
-        min-height: 100px;
+        padding: 2px 16px 4px 16px !important;
+        min-height: 80px;
         margin: 0 !important;
     }}
     
     .ai-msg {{
         font-size: 14px !important;
-        padding: 12px 16px;
+        padding: 11px 15px;
         max-width: 90%;
-        margin: 4px 0 !important;
+        margin: 3px 0 !important;
     }}
     
     .user-msg {{
         font-size: 13px;
-        padding: 10px 16px;
+        padding: 9px 15px;
         max-width: 75%;
-        margin: 4px 0 !important;
+        margin: 3px 0 !important;
     }}
     
     /* 버튼 영역 간격 최소화 */
@@ -312,7 +319,7 @@ div[data-testid="stspinner"] {{
     
     .btn-title {{
         font-size: 12px;
-        margin: 0 0 6px 0 !important;
+        margin: 0 0 5px 0 !important;
     }}
     
     .stButton {{
@@ -320,9 +327,9 @@ div[data-testid="stspinner"] {{
     }}
     
     .stButton > button {{
-        padding: 11px !important;
+        padding: 10px !important;
         font-size: 13px !important;
-        margin-bottom: 6px !important;
+        margin-bottom: 5px !important;
     }}
     
     /* 입력창 */
@@ -349,7 +356,7 @@ div[data-testid="stspinner"] {{
 /* 작은 모바일 (iPhone SE 등) */
 @media (max-width: 400px) {{
     .title-box {{
-        padding: 2px 12px 2px 12px !important;
+        padding: 1px 12px 1px 12px !important;
     }}
     
     .title-box h1 {{
@@ -357,16 +364,21 @@ div[data-testid="stspinner"] {{
     }}
     
     .chat-area {{
-        padding: 2px 12px 4px 12px !important;
+        padding: 1px 12px 3px 12px !important;
     }}
     
     .ai-msg {{
         font-size: 13px !important;
-        margin: 3px 0 !important;
+        margin: 2px 0 !important;
+        padding: 10px 14px;
     }}
     
     .btn-area {{
         padding: 0 12px 8px 12px !important;
+    }}
+    
+    .btn-title {{
+        margin: 0 0 4px 0 !important;
     }}
 }}
 </style>
