@@ -94,10 +94,10 @@ section[data-testid="stSidebar"] {{
 
 /* 채팅 영역 */
 .chat-area {{
-    padding: 12px 20px 8px 20px;
+    padding: 12px 20px 4px 20px;
     background: white !important;
     min-height: 150px;
-    margin-bottom: 150px;
+    margin-bottom: 100px;
 }}
 
 /* AI 메시지 - PC */
@@ -109,7 +109,7 @@ section[data-testid="stSidebar"] {{
     margin: 8px 0 !important;
     max-width: 85% !important;
     display: inline-block !important;
-    font-size: 15px !important;
+    font-size: 16px !important;
     line-height: 1.5 !important;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
     border: none !important;
@@ -142,7 +142,8 @@ section[data-testid="stSidebar"] {{
     margin: 8px 0 !important;
     max-width: 70% !important;
     display: inline-block !important;
-    font-size: 14px !important;
+    font-size: 15px !important;
+    line-height: 1.4 !important;
     float: right !important;
     clear: both !important;
     border: none !important;
@@ -153,6 +154,36 @@ section[data-testid="stSidebar"] {{
 .user-msg::after {{
     content: none !important;
     display: none !important;
+}}
+
+/* 생각 과정 스타일 */
+.thinking-process {{
+    background: #F9FAFB !important;
+    border-left: 3px solid {COLOR_PRIMARY} !important;
+    padding: 12px 16px !important;
+    margin: 10px 0 !important;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    color: #6B7280 !important;
+    line-height: 1.5 !important;
+    max-height: 200px !important;
+    overflow-y: auto !important;
+}}
+
+.thinking-title {{
+    font-weight: 600 !important;
+    color: {COLOR_PRIMARY} !important;
+    margin-bottom: 6px !important;
+    font-size: 13px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}}
+
+.thinking-content {{
+    font-size: 12px !important;
+    color: #6B7280 !important;
+    font-style: italic !important;
 }}
 
 .msg-right {{
@@ -464,9 +495,27 @@ if user_input:
     context = conv_manager.get_context()
     history = conv_manager.get_formatted_history(for_llm=True)
     
-    with st.spinner("상담 중..."):
-        time.sleep(1.0)
-        ai_response = generate_ai_response(user_input, context, history)
+    # 생각 과정 표시
+    thinking_placeholder = st.empty()
+    thinking_placeholder.markdown(
+        """
+        <div class="thinking-process">
+            <div class="thinking-title">✨ Analyzing your question...</div>
+            <div class="thinking-content">
+            • Reviewing symptoms and medical history<br>
+            • Analyzing treatment options<br>
+            • Preparing personalized consultation
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    time.sleep(1.5)
+    ai_response = generate_ai_response(user_input, context, history)
+    
+    # 생각 과정 제거
+    thinking_placeholder.empty()
     
     conv_manager.add_message("ai", ai_response)
     st.rerun()
