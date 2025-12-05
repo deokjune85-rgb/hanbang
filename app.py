@@ -110,15 +110,20 @@ section[data-testid="stSidebar"] {{
     display: inline-block;
     font-size: 15px !important;
     line-height: 1.5;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
-    border: 1px solid #F3F4F6 !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06) !important;
+    border: none !important;
+    outline: none !important;
 }}
 
-/* 점점이 + 까만줄 완전 제거 */
+/* 모든 가상요소 제거 */
 .ai-msg::before,
-.ai-msg::after {{
+.ai-msg::after,
+.ai-msg *::before,
+.ai-msg *::after {{
     content: none !important;
     display: none !important;
+    border: none !important;
+    background: none !important;
 }}
 
 .user-msg {{
@@ -206,7 +211,7 @@ section[data-testid="stSidebar"] {{
 
 .stChatInput input::placeholder {{
     color: #9CA3AF !important;
-    font-size: 14px !important;
+    font-size: 15px !important;
 }}
 
 /* 푸터 (가로 100% 흰색) */
@@ -421,34 +426,9 @@ for msg in conv_manager.get_history():
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ============================================
-# 버튼
+# 버튼 (삭제됨)
 # ============================================
-if not conv_manager.is_ready_for_conversion():
-    st.markdown('<div class="btn-area">', unsafe_allow_html=True)
-    st.markdown('<div class="btn-title">빠른 상담</div>', unsafe_allow_html=True)
-    
-    buttons = conv_manager.get_recommended_buttons()
-    col1, col2 = st.columns(2)
-    
-    for idx, btn in enumerate(buttons[:4]):
-        with (col1 if idx % 2 == 0 else col2):
-            if st.button(btn, key=f"btn_{idx}", use_container_width=True):
-                if "전화" in btn:
-                    st.info("📞 02-1234-5678 (평일 09:00-18:00)")
-                else:
-                    conv_manager.add_message("user", btn, metadata={"type": "button"})
-                    
-                    context = conv_manager.get_context()
-                    history = conv_manager.get_formatted_history(for_llm=True)
-                    
-                    with st.spinner("상담 중..."):
-                        time.sleep(0.8)
-                        ai_response = generate_ai_response(btn, context, history)
-                    
-                    conv_manager.add_message("ai", ai_response)
-                    st.rerun()
-    
-    st.markdown('</div>', unsafe_allow_html=True)
+# 빠른상담 버튼 제거
 
 # ============================================
 # 입력창
