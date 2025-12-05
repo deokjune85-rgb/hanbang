@@ -50,8 +50,7 @@ class PromptEngine:
                 }
             )
             
-            # 초기화 성공 표시
-            st.success(f"✅ Gemini 연결 성공: {GEMINI_MODEL}")
+            # 조용히 초기화 (메시지 없음)
             
         except Exception as e:
             st.error(f"❌ Gemini 초기화 실패: {str(e)}")
