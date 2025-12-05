@@ -251,9 +251,9 @@ div[data-testid="stspinner"] {{
 
 /* ========== 모바일 반응형 ========== */
 @media (max-width: 768px) {{
-    /* 타이틀 작게 */
+    /* 타이틀 작게 + 상단 여백 최소화 */
     .title-box {{
-        padding: 16px 16px 10px 16px;
+        padding: 8px 16px 6px 16px;
     }}
     
     .title-box h1 {{
@@ -263,35 +263,37 @@ div[data-testid="stspinner"] {{
     
     .title-box .sub {{
         font-size: 11px;
-        margin-top: 4px;
+        margin-top: 3px;
     }}
     
-    /* 채팅 영역 여백 축소 */
+    /* 채팅 영역 여백 최소화 */
     .chat-area {{
-        padding: 10px 16px 14px 16px;
-        min-height: 120px;
+        padding: 6px 16px 8px 16px;
+        min-height: 100px;
     }}
     
     .ai-msg {{
         font-size: 14px !important;
         padding: 12px 16px;
         max-width: 90%;
+        margin: 6px 0;
     }}
     
     .user-msg {{
         font-size: 13px;
         padding: 10px 16px;
         max-width: 75%;
+        margin: 6px 0;
     }}
     
-    /* 버튼 영역 간격 축소 */
+    /* 버튼 영역 간격 최소화 */
     .btn-area {{
-        padding: 0 16px 14px 16px;
+        padding: 0 16px 12px 16px;
     }}
     
     .btn-title {{
         font-size: 12px;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
     }}
     
     .stButton > button {{
@@ -323,12 +325,25 @@ div[data-testid="stspinner"] {{
 
 /* 작은 모바일 (iPhone SE 등) */
 @media (max-width: 400px) {{
+    .title-box {{
+        padding: 6px 12px 4px 12px;
+    }}
+    
     .title-box h1 {{
         font-size: 18px !important;
     }}
     
+    .chat-area {{
+        padding: 4px 12px 6px 12px;
+    }}
+    
     .ai-msg {{
         font-size: 13px !important;
+        margin: 4px 0;
+    }}
+    
+    .btn-area {{
+        padding: 0 12px 10px 12px;
     }}
 }}
 </style>
