@@ -37,146 +37,181 @@ st.set_page_config(
 # 1. CSS 스타일링 (화이트 모드)
 # ============================================
 def load_css():
-    """화이트 모드 CSS"""
+    """Gemini 스타일 CSS"""
     custom_css = f"""
     <style>
-    /* 전체 배경 */
+    /* 전체 리셋 */
     .stApp {{
-        background: {COLOR_BG};
-        font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
-        color: {COLOR_TEXT};
+        background: {COLOR_BG} !important;
+        font-family: 'Pretendard', -apple-system, sans-serif;
+    }}
+    
+    /* 상단 여백 완전 제거 */
+    .main .block-container {{
+        padding: 0 !important;
+        max-width: 100% !important;
+    }}
+    
+    header {{
+        display: none !important;
+    }}
+    
+    /* 타이틀 영역 */
+    .title-container {{
+        text-align: center;
+        padding: 40px 20px 24px 20px;
+        background: white;
+    }}
+    
+    h1 {{
+        color: {COLOR_PRIMARY} !important;
+        font-family: 'Arial', sans-serif !important;
+        font-weight: 700 !important;
+        font-size: 32px !important;
+        margin: 0 !important;
         padding: 0 !important;
     }}
     
-    /* 상단/하단 여백 제거 */
-    .main .block-container {{
-        padding-top: 2rem !important;
-        padding-bottom: 2rem !important;
-        max-width: 800px;
-    }}
-    
-    /* 타이틀 */
-    h1 {{
-        color: {COLOR_PRIMARY} !important;
-        font-weight: 700;
-        text-align: center;
-        margin-bottom: 8px;
-    }}
-    
-    /* 서브타이틀 */
     .subtitle {{
-        text-align: center;
         color: #6B7280;
-        font-size: 15px;
-        margin-bottom: 24px;
+        font-size: 14px;
+        margin-top: 8px;
     }}
     
-    /* 채팅 컨테이너 */
+    /* 채팅 영역 */
     .chat-container {{
-        margin: 16px 0;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
+        padding: 20px;
+        min-height: 400px;
+        background: white;
     }}
     
-    /* AI 메시지 버블 */
+    /* AI 메시지 */
     .chat-bubble-ai {{
         background: {COLOR_AI_BUBBLE};
-        color: {COLOR_TEXT} !important;
-        padding: 16px 18px;
-        border-radius: 16px 16px 16px 4px;
-        width: fit-content;
-        max-width: 75%;
+        color: {COLOR_TEXT};
+        padding: 16px 20px;
+        border-radius: 18px 18px 18px 4px;
+        margin: 8px 0;
+        max-width: 80%;
         font-size: 15px;
-        line-height: 1.6;
-        border: 1px solid {COLOR_BORDER};
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        margin-right: auto;
+        line-height: 1.5;
+        display: inline-block;
     }}
     
-    /* 사용자 메시지 버블 */
+    /* 사용자 메시지 */
     .chat-bubble-user {{
         background: {COLOR_USER_BUBBLE};
-        color: {COLOR_TEXT} !important;
-        padding: 14px 18px;
-        border-radius: 16px 16px 4px 16px;
-        width: fit-content;
-        max-width: 70%;
+        color: {COLOR_TEXT};
+        padding: 14px 20px;
+        border-radius: 18px 18px 4px 18px;
+        margin: 8px 0 8px auto;
+        max-width: 75%;
         font-size: 15px;
-        font-weight: 500;
-        border: 1px solid {COLOR_PRIMARY};
-        margin-left: auto;
+        display: inline-block;
+        float: right;
+        clear: both;
     }}
     
-    /* 추천 버튼 */
-    .stButton > button {{
-        width: 100%;
+    /* 버튼 영역 */
+    .button-container {{
+        padding: 16px 20px;
         background: white;
-        color: {COLOR_PRIMARY} !important;
-        border: 1.5px solid {COLOR_BORDER};
-        padding: 12px 14px;
+    }}
+    
+    .section-title {{
+        color: {COLOR_PRIMARY};
         font-size: 14px;
-        border-radius: 10px;
-        font-weight: 500;
-        transition: all 0.2s ease;
-        margin-bottom: 6px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        text-align: center;
+    }}
+    
+    .stButton > button {{
+        width: 100% !important;
+        background: white !important;
+        color: {COLOR_PRIMARY} !important;
+        border: 1.5px solid {COLOR_BORDER} !important;
+        padding: 14px 16px !important;
+        font-size: 14px !important;
+        border-radius: 24px !important;
+        font-weight: 500 !important;
+        margin-bottom: 8px !important;
+        transition: all 0.2s !important;
     }}
     
     .stButton > button:hover {{
-        background: {COLOR_AI_BUBBLE};
-        border-color: {COLOR_PRIMARY};
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(37, 99, 235, 0.1);
+        background: {COLOR_AI_BUBBLE} !important;
+        border-color: {COLOR_PRIMARY} !important;
     }}
     
-    /* 입력창 */
+    /* 입력창 (Gemini 스타일) */
+    .stChatInput {{
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        background: white !important;
+        padding: 12px 20px !important;
+        box-shadow: 0 -2px 8px rgba(0,0,0,0.1) !important;
+        z-index: 999 !important;
+    }}
+    
     .stChatInput > div {{
-        background-color: white !important;
+        background: white !important;
         border: 1px solid {COLOR_BORDER} !important;
-        border-radius: 12px !important;
+        border-radius: 24px !important;
+        padding: 4px 16px !important;
     }}
     
-    input[type="text"], textarea, .stSelectbox > div > div {{
-        background-color: white !important;
-        color: {COLOR_TEXT} !important;
+    .stChatInput input {{
+        border: none !important;
+        background: transparent !important;
+    }}
+    
+    .stChatInput input::placeholder {{
+        color: #9CA3AF !important;
+        font-size: 14px !important;
+    }}
+    
+    /* 폼 스타일 */
+    .stForm {{
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid {COLOR_BORDER};
+        margin: 16px 20px;
+    }}
+    
+    input[type="text"], textarea, .stSelectbox {{
         border: 1px solid {COLOR_BORDER} !important;
         border-radius: 8px !important;
         padding: 10px !important;
     }}
     
-    /* 폼 스타일 */
-    .stForm {{
-        background: {COLOR_AI_BUBBLE};
-        padding: 24px;
-        border-radius: 16px;
-        border: 1px solid {COLOR_BORDER};
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    /* 푸터 (Gemini 스타일) */
+    .footer-gemini {{
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 8px 20px 80px 20px;
+        text-align: center;
+        font-size: 11px;
+        color: #9CA3AF;
+        border-top: 1px solid {COLOR_BORDER};
+        z-index: 998;
     }}
     
-    /* 섹션 제목 */
-    .section-title {{
-        color: {COLOR_PRIMARY};
-        font-size: 16px;
-        font-weight: 600;
-        margin: 16px 0 10px 0;
-        text-align: center;
+    .footer-gemini b {{
+        color: {COLOR_TEXT};
     }}
     
     /* 구분선 */
     hr {{
-        border-color: {COLOR_BORDER};
-        opacity: 1;
-        margin: 20px 0;
-    }}
-    
-    /* 푸터 */
-    .footer {{
-        text-align: center;
-        color: #9CA3AF;
-        font-size: 12px;
-        padding: 20px 0;
+        border: none;
         border-top: 1px solid {COLOR_BORDER};
-        margin-top: 20px;
+        margin: 20px 0;
     }}
     </style>
     """
@@ -199,8 +234,10 @@ if len(conv_manager.get_history()) == 0:
 # ============================================
 # 3. 헤더
 # ============================================
-st.title(f"{HOSPITAL_NAME}")
+st.markdown('<div class="title-container">', unsafe_allow_html=True)
+st.markdown('<h1>IMD MEDICAL SYSTEM</h1>', unsafe_allow_html=True)
 st.markdown('<p class="subtitle">24시간 AI 한의사 상담</p>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
 # ============================================
 # 4. 채팅 히스토리 렌더링
@@ -217,17 +254,18 @@ st.markdown('</div>', unsafe_allow_html=True)
 # 5. 추천 버튼
 # ============================================
 if not conv_manager.is_ready_for_conversion():
+    st.markdown('<div class="button-container">', unsafe_allow_html=True)
     st.markdown('<p class="section-title">빠른 상담</p>', unsafe_allow_html=True)
     
     buttons = conv_manager.get_recommended_buttons()
     
-    # 4개 버튼을 2x2 그리드로
+    # 4개 버튼을 2x2 그리드로 (가로폭 꽉 채움)
     col1, col2 = st.columns(2)
     
     for idx, button_text in enumerate(buttons[:4]):
         target_col = col1 if idx % 2 == 0 else col2
         with target_col:
-            if st.button(button_text, key=f"quick_{idx}"):
+            if st.button(button_text, key=f"quick_{idx}", use_container_width=True):
                 # 전화 상담 버튼 처리
                 if "전화" in button_text:
                     st.info("전화 상담: 02-1234-5678 (평일 09:00-18:00)")
@@ -244,11 +282,13 @@ if not conv_manager.is_ready_for_conversion():
                 
                 conv_manager.add_message("ai", ai_response)
                 st.rerun()
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ============================================
-# 6. 채팅 입력창
+# 6. 채팅 입력창 (Gemini 스타일)
 # ============================================
-user_input = st.chat_input("증상이나 궁금한 점을 말씀해주세요")
+user_input = st.chat_input("IMD입니다. 궁금하신 점을 물어보세요")
 
 if user_input:
     conv_manager.add_message("user", user_input, metadata={"type": "text"})
@@ -347,13 +387,12 @@ if conv_manager.get_context()['stage'] == 'complete':
                 st.markdown(conv_manager.get_summary())
 
 # ============================================
-# 9. 푸터
+# 9. 푸터 (Gemini 스타일 - 하단 고정)
 # ============================================
-st.markdown("---")
 st.markdown(
     f"""
-    <div class='footer'>
-        <b style='color:{COLOR_PRIMARY};'>{HOSPITAL_NAME}</b><br>
+    <div class='footer-gemini'>
+        <b>아이엠디 메디컬 시스템</b><br>
         24시간 AI 상담 | 실제 예약은 진료시간 내 가능합니다
     </div>
     """,
