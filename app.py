@@ -38,16 +38,21 @@ st.markdown(f"""
 <style>
 /* 전체 초기화 */
 .stApp {{
-    background: {COLOR_BG} !important;
+    background: white !important;
 }}
 
 .main .block-container {{
     padding: 0 !important;
     max-width: 720px !important;
     margin: 0 auto !important;
+    background: white !important;
 }}
 
 header, .stDeployButton {{
+    display: none !important;
+}}
+
+footer {{
     display: none !important;
 }}
 
@@ -76,14 +81,14 @@ header, .stDeployButton {{
 /* 채팅 영역 */
 .chat-area {{
     padding: 16px 20px 20px 20px;
-    background: white;
+    background: white !important;
     min-height: 200px;
     margin-bottom: 160px;
 }}
 
 .ai-msg {{
-    background: white;
-    color: #1F2937;
+    background: white !important;
+    color: #1F2937 !important;
     padding: 14px 18px;
     border-radius: 18px 18px 18px 4px;
     margin: 8px 0;
@@ -168,6 +173,7 @@ header, .stDeployButton {{
 
 .stChatInput input {{
     color: #1F2937 !important;
+    background: white !important;
 }}
 
 .stChatInput input::placeholder {{
@@ -183,7 +189,7 @@ header, .stDeployButton {{
     transform: translateX(-50%);
     width: 100%;
     max-width: 720px;
-    background: white;
+    background: white !important;
     padding: 12px 20px;
     text-align: center;
     font-size: 11px;
@@ -209,6 +215,12 @@ header, .stDeployButton {{
 input, textarea, select {{
     border: 1px solid {COLOR_BORDER} !important;
     border-radius: 8px !important;
+    background: white !important;
+}}
+
+/* Streamlit 기본 요소들 흰색 배경 */
+.element-container, .stMarkdown, div[data-testid="stVerticalBlock"] {{
+    background: white !important;
 }}
 </style>
 """, unsafe_allow_html=True)
