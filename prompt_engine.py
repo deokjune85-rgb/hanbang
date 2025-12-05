@@ -29,13 +29,13 @@ class PromptEngine:
         """Gemini API 설정"""
         try:
             if "GEMINI_API_KEY" not in st.secrets:
-                st.error("❌ GEMINI_API_KEY가 설정되지 않았습니다.")
+                st.error("❌ GEMINI_API_KEY가 Secrets에 없습니다.")
                 self.model = None
                 return
             
             api_key = st.secrets["GEMINI_API_KEY"]
             
-            if not api_key:
+            if not api_key or api_key == "":
                 st.error("❌ API 키가 비어있습니다.")
                 self.model = None
                 return
@@ -50,8 +50,11 @@ class PromptEngine:
                 }
             )
             
+            # 초기화 성공 표시
+            st.success(f"✅ Gemini 연결 성공: {GEMINI_MODEL}")
+            
         except Exception as e:
-            st.error(f"❌ 시스템 초기화 실패: {str(e)}")
+            st.error(f"❌ Gemini 초기화 실패: {str(e)}")
             self.model = None
     
     def generate_response(
