@@ -481,29 +481,78 @@ chat_html += '</div>'
 st.markdown(chat_html, unsafe_allow_html=True)
 
 # ============================================
-# 자동 CTA (3회 이상 대화 시)
+# 자동 예약 폼 (3회 이상 대화 시)
 # ============================================
-if len(conv_manager.get_history()) >= 6:  # 3회 이상 대화
+if len(conv_manager.get_history()) >= 6 and conv_manager.get_context()['stage'] != 'complete':
+    st.markdown("---")
     st.markdown(
-        f"""
-        <div style="background: {COLOR_AI_BUBBLE}; padding: 24px; border-radius: 16px; margin: 20px 20px 120px 20px; text-align: center; border: 1px solid {COLOR_BORDER};">
-            <div style="font-size: 17px; font-weight: 600; color: {COLOR_PRIMARY}; margin-bottom: 10px;">
-                더 정확한 진단이 필요하신가요?
-            </div>
-            <div style="font-size: 14px; color: #6B7280; margin-bottom: 18px; line-height: 1.6;">
-                원장님께서 직접 맥진과 상담을 통해<br>
-                환자분의 상태를 정밀하게 분석해드립니다
-            </div>
-            <a href="tel:02-1234-5678" style="display: inline-block; background: {COLOR_PRIMARY}; color: white; padding: 14px 40px; border-radius: 24px; text-decoration: none; font-weight: 600; font-size: 15px; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);">
-                진료 예약하기
-            </a>
-            <div style="font-size: 12px; color: #9CA3AF; margin-top: 12px;">
-                평일 09:00-18:00 | 토요일 09:00-14:00
-            </div>
-        </div>
-        """,
+        f'<div style="text-align:center; color:{COLOR_PRIMARY}; font-weight:600; font-size:18px; margin:20px 0 10px;">AI 예진 결과를 원장님께 전달하시겠습니까?</div>',
         unsafe_allow_html=True
     )
+    st.markdown(
+        "<p style='text-align:center; color:#6B7280; font-size:14px; margin-bottom:20px;'>담당 컨설턴트가 24시간 내 연락드립니다</p>",
+        unsafe_allow_html=True
+    )
+    
+    with st.form("reservation_form"):
+        col1, col2 = st.columns(2)
+        with col1:
+            name = st.text_input("성함", placeholder="홍길동")
+        with col2:
+            contact = st.text_input("연락처", placeholder="010-1234-5678")
+        
+        symptom = st.text_area(
+            "주요 증상", 
+            placeholder="예: 만성 피로, 소화불량 등",
+            height=80,
+            value=conv_manager.get_context().get('symptom', '')
+        )
+        preferred_date = st.selectbox("희망 방문 시기", PREFERRED_DATE_OPTIONS)
+        
+        submitted = st.form_submit_button("예진표 전송 및 우선 예약", use_container_width=True)
+        
+        if submitted:
+            if not name or not contact or not symptom:
+                st.error("필수 정보를 모두 입력해주세요.")
+            else:
+                reservation_data = {
+                    'name': name,
+                    'contact': contact,
+                    'symptom': symptom,
+                    'preferred_date': preferred_date,
+                    'chat_summary': conv_manager.get_summary(),
+                    'source': 'IMD_Medical_Chatbot'
+                }
+                
+                success, message = lead_handler.save_lead(reservation_data)
+                
+                if success:
+                    completion_msg = f"""
+예진표가 원장님께 전달되었습니다.
+
+{name}님, 감사합니다.
+
+담당 컨설턴트가 {contact}로 24시간 내 연락드려 
+예약 일정을 확정하겠습니다.
+
+증상: {symptom}  
+희망 시기: {preferred_date}
+
+진료 전 준비사항:
+- 기존 진단서나 검사 결과가 있다면 지참해주세요
+- 복용 중인 약이 있다면 말씀해주세요
+- 편안한 복장으로 내원해주세요
+
+궁금하신 점이 있으시면 언제든 문의주세요.
+"""
+                    conv_manager.add_message("ai", completion_msg)
+                    conv_manager.update_stage('complete')
+                    
+                    st.success("예진표 전송이 완료되었습니다!")
+                    time.sleep(1)
+                    st.rerun()
+                else:
+                    st.error(f"오류: {message}")
 
 # ============================================
 # 버튼 (삭제됨)
@@ -528,66 +577,8 @@ if user_input:
     st.rerun()
 
 # ============================================
-# 예약 폼
+# 예약 폼 제거 (자동 CTA로 대체됨)
 # ============================================
-if conv_manager.is_ready_for_conversion() and conv_manager.get_context()['stage'] != 'complete':
-    st.markdown("---")
-    st.markdown('<div style="text-align:center; color:#2563EB; font-weight:600; margin:20px 0 10px;">예약 신청</div>', unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center; color:#6B7280; font-size:13px;'>빠른 시일 내 연락드리겠습니다</p>", unsafe_allow_html=True)
-    
-    with st.form("reservation_form"):
-        col1, col2 = st.columns(2)
-        with col1:
-            name = st.text_input("성함 *", placeholder="홍길동")
-        with col2:
-            contact = st.text_input("연락처 *", placeholder="010-1234-5678")
-        
-        symptom = st.text_area("주요 증상 *", placeholder="예: 허리 통증, 다이어트 상담 등", height=80)
-        preferred_date = st.selectbox("희망 방문 시기 *", PREFERRED_DATE_OPTIONS)
-        
-        submitted = st.form_submit_button("예약 신청", use_container_width=True)
-        
-        if submitted:
-            if not name or not contact or not symptom:
-                st.error("필수 정보를 모두 입력해주세요.")
-            else:
-                reservation_data = {
-                    'name': name,
-                    'contact': contact,
-                    'symptom': symptom,
-                    'preferred_date': preferred_date,
-                    'chat_summary': conv_manager.get_summary(),
-                    'source': 'IMD_Medical_Chatbot'
-                }
-                
-                success, message = lead_handler.save_lead(reservation_data)
-                
-                if success:
-                    completion_msg = f"""
-예약 신청이 완료되었습니다
-
-{name}님, 감사합니다.
-
-빠른 시일 내 {contact}로 연락드려 예약 일정을 확정하겠습니다.
-
-증상: {symptom}  
-희망 시기: {preferred_date}
-
-진료 전 준비사항:
-- 기존 진단서/검사 결과가 있다면 지참해주세요
-- 복용 중인 약이 있다면 말씀해주세요
-- 편안한 복장으로 내원해주세요
-
-궁금하신 점이 있으시면 언제든 문의주세요.
-"""
-                    conv_manager.add_message("ai", completion_msg)
-                    conv_manager.update_stage('complete')
-                    
-                    st.success("예약 신청이 완료되었습니다!")
-                    time.sleep(1)
-                    st.rerun()
-                else:
-                    st.error(f"오류: {message}")
 
 # ============================================
 # 완료 후
