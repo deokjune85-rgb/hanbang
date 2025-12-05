@@ -296,10 +296,26 @@ section[data-testid="stSidebar"] {{
     margin: 16px 20px 180px 20px;
 }}
 
+/* 폼 레이블 검은색 */
+.stForm label {{
+    color: #1F2937 !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+}}
+
+/* 폼 입력창 */
 input, textarea, select {{
     border: 1px solid {COLOR_BORDER} !important;
     border-radius: 8px !important;
     background: white !important;
+    color: #1F2937 !important;
+}}
+
+/* Placeholder 옅은 회색 */
+input::placeholder,
+textarea::placeholder {{
+    color: #D1D5DB !important;
+    opacity: 1 !important;
 }}
 
 /* 모든 Streamlit 요소 흰색 배경 */
@@ -481,9 +497,12 @@ chat_html += '</div>'
 st.markdown(chat_html, unsafe_allow_html=True)
 
 # ============================================
-# 자동 예약 폼 (3회 이상 대화 시)
+# 자동 예약 폼 (3회 이상 대화 시 + 마지막이 AI 답변일 때)
 # ============================================
-if len(conv_manager.get_history()) >= 6 and conv_manager.get_context()['stage'] != 'complete':
+chat_history = conv_manager.get_history()
+last_msg_is_ai = chat_history and chat_history[-1]['role'] == 'ai'
+
+if len(chat_history) >= 6 and last_msg_is_ai and conv_manager.get_context()['stage'] != 'complete':
     st.markdown("---")
     st.markdown(
         f'<div style="text-align:center; color:{COLOR_PRIMARY}; font-weight:600; font-size:18px; margin:20px 0 10px;">AI 예진 결과를 원장님께 전달하시겠습니까?</div>',
@@ -503,7 +522,7 @@ if len(conv_manager.get_history()) >= 6 and conv_manager.get_context()['stage'] 
         
         symptom = st.text_area(
             "주요 증상", 
-            placeholder="예: 만성 피로, 소화불량 등",
+            placeholder="다이어트",
             height=80,
             value=conv_manager.get_context().get('symptom', '')
         )
