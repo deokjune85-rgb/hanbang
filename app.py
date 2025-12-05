@@ -36,8 +36,12 @@ st.set_page_config(
 # ============================================
 st.markdown(f"""
 <style>
-/* 전체 초기화 */
+/* 전체 흰색 배경 (가로 100%) */
 .stApp {{
+    background: white !important;
+}}
+
+.main {{
     background: white !important;
 }}
 
@@ -53,6 +57,15 @@ header, .stDeployButton {{
 }}
 
 footer {{
+    display: none !important;
+}}
+
+/* Streamlit 기본 여백 제거 */
+.appview-container {{
+    background: white !important;
+}}
+
+section[data-testid="stSidebar"] {{
     display: none !important;
 }}
 
@@ -94,10 +107,16 @@ footer {{
     margin: 8px 0;
     max-width: 85%;
     display: inline-block;
-    font-size: 14px;
+    font-size: 15px !important;
     line-height: 1.5;
     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     border: 1px solid #F3F4F6;
+}}
+
+/* 점점이 제거 */
+.ai-msg::before,
+.ai-msg::after {{
+    display: none !important;
 }}
 
 .user-msg {{
@@ -150,21 +169,22 @@ footer {{
     border-color: {COLOR_PRIMARY} !important;
 }}
 
-/* 입력창 */
+/* 입력창 (가로 100% 흰색) */
 .stChatInput {{
     position: fixed !important;
     bottom: 60px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
+    left: 0 !important;
+    right: 0 !important;
     width: 100% !important;
-    max-width: 720px !important;
     background: white !important;
-    padding: 10px 20px !important;
+    padding: 10px 0 !important;
     box-shadow: 0 -2px 6px rgba(0,0,0,0.08) !important;
     z-index: 999 !important;
 }}
 
 .stChatInput > div {{
+    max-width: 680px !important;
+    margin: 0 auto !important;
     border: 1px solid #E5E7EB !important;
     border-radius: 24px !important;
     background: white !important;
@@ -178,17 +198,16 @@ footer {{
 
 .stChatInput input::placeholder {{
     color: #9CA3AF !important;
-    font-size: 13px !important;
+    font-size: 14px !important;
 }}
 
-/* 푸터 */
+/* 푸터 (가로 100% 흰색) */
 .footer {{
     position: fixed;
     bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
+    right: 0;
     width: 100%;
-    max-width: 720px;
     background: white !important;
     padding: 12px 20px;
     text-align: center;
@@ -218,8 +237,14 @@ input, textarea, select {{
     background: white !important;
 }}
 
-/* Streamlit 기본 요소들 흰색 배경 */
-.element-container, .stMarkdown, div[data-testid="stVerticalBlock"] {{
+/* 모든 Streamlit 요소 흰색 배경 */
+.element-container, .stMarkdown, div[data-testid="stVerticalBlock"], 
+div[data-testid="stHorizontalBlock"], .row-widget {{
+    background: white !important;
+}}
+
+/* 스피너 등 모든 요소 */
+div[data-testid="stspinner"] {{
     background: white !important;
 }}
 </style>
