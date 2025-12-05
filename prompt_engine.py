@@ -63,6 +63,7 @@ class PromptEngine:
         """AI 응답 생성"""
         
         if not self.model:
+            st.warning("⚠️ Gemini 모델 초기화 실패 - Fallback 사용")
             return self._fallback_response(user_input, context)
         
         # 재시도 로직
@@ -83,9 +84,13 @@ class PromptEngine:
                 
             except Exception as e:
                 self.retry_count += 1
+                error_msg = str(e)
+                
+                # 에러 상세 로그
+                st.warning(f"⚠️ AI 응답 실패 (시도 {attempt+1}/{max_retries}): {error_msg}")
                 
                 if attempt == max_retries - 1:
-                    st.warning(f"⚠️ AI 응답 생성 실패")
+                    st.error(f"❌ Gemini API 최종 실패. Fallback 사용합니다.")
                     return self._fallback_response(user_input, context)
                 else:
                     time.sleep(1)
@@ -98,40 +103,26 @@ class PromptEngine:
         context: Dict,
         conversation_history: str
     ) -> str:
-        """프롬프트 조립"""
+        """프롬프트 조립 (간결화)"""
         
         system_prompt = SYSTEM_PROMPT.format(
-            stage=context.get('stage', 'initial'),
             symptom=context.get('symptom') or '파악 중',
             trust_level=context.get('trust_level', 0)
         )
         
-        # 치료 정보 추가 (관심사가 있으면)
-        if context.get('treatment_interest'):
-            treatment_details = []
-            for treatment in context['treatment_interest']:
-                if treatment in TREATMENT_INFO:
-                    info = TREATMENT_INFO[treatment]
-                    treatment_details.append(f"- {treatment}: {info['설명']}")
-            
-            if treatment_details:
-                system_prompt += "\n\n## 환자가 관심있는 치료\n" + "\n".join(treatment_details)
+        # 최근 3개 대화만
+        history_lines = conversation_history.split('\n')
+        recent_history = '\n'.join(history_lines[-6:])  # 3턴 = 6줄
         
         full_prompt = f"""{system_prompt}
 
----
+## 최근 대화
+{recent_history}
 
-## 최근 대화 내역
-{conversation_history}
-
----
-
-## 환자의 최신 입력
+## 환자 입력
 {user_input}
 
----
-
-**친절한 한의사로서 응답하세요. 3-5문장, 공감 표현 포함.**
+**3-4문장으로 친절하게 응답하세요.**
 """
         return full_prompt
     
@@ -159,8 +150,22 @@ class PromptEngine:
         """Fallback 응답"""
         user_lower = user_input.lower()
         
+        # 다이어트 문의
+        if any(word in user_lower for word in ['다이어트', '살', '비만', '체중', '뱃살', '빼고']):
+            return """다이어트로 고민이시군요. 많은 분들이 찾으시는 상담입니다.
+
+**다이어트 한약 프로그램:**
+- 체질에 맞춰 신진대사 개선
+- 식욕 조절 & 체지방 감소
+- 1개월 기준 3-5kg 감량 목표
+
+**비용**: 1개월 30-50만원 (한약 + 관리)
+**기간**: 보통 3-6개월 권장
+
+현재 몸무게와 목표 체중이 어떻게 되시나요?"""
+        
         # 비용 문의
-        if any(word in user_lower for word in ['가격', '비용', '얼마', '요금']):
+        elif any(word in user_lower for word in ['가격', '비용', '얼마', '요금']):
             return """비용 안내해드립니다.
 
 **초진**: 5-8만원 (진찰 + 침/부항)
