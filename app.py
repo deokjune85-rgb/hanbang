@@ -467,13 +467,44 @@ st.markdown("""
 # ============================================
 # 채팅 히스토리
 # ============================================
+# Thinking 상태 확인 및 처리
+has_thinking = False
+if conv_manager.get_history():
+    last_msg = conv_manager.get_history()[-1]
+    if last_msg.get('role') == 'system' and last_msg.get('metadata', {}).get('type') == 'thinking':
+        has_thinking = True
+        
+        # AI 응답 생성
+        context = conv_manager.get_context()
+        history = conv_manager.get_formatted_history(for_llm=True)
+        user_msg = conv_manager.get_history()[-2]['text']  # thinking 바로 전 메시지
+        
+        time.sleep(1.5)
+        ai_response = generate_ai_response(user_msg, context, history)
+        
+        # thinking 제거하고 AI 응답 추가
+        conv_manager.remove_last_thinking()
+        conv_manager.add_message("ai", ai_response)
+        st.rerun()
+
 chat_html = '<div class="chat-area">'
 
 for msg in conv_manager.get_history():
     if msg['role'] == 'ai':
         chat_html += f'<div class="ai-msg">{msg["text"]}</div>'
-    else:
+    elif msg['role'] == 'user':
         chat_html += f'<div class="msg-right"><span class="user-msg">{msg["text"]}</span></div>'
+    elif msg['role'] == 'system' and msg.get('metadata', {}).get('type') == 'thinking':
+        chat_html += '''
+        <div class="thinking-process">
+            <div class="thinking-title">✨ Analyzing your question...</div>
+            <div class="thinking-content">
+            • Reviewing symptoms and medical history<br>
+            • Analyzing treatment options<br>
+            • Preparing personalized consultation
+            </div>
+        </div>
+        '''
 
 chat_html += '</div>'
 
@@ -490,34 +521,13 @@ st.markdown(chat_html, unsafe_allow_html=True)
 user_input = st.chat_input("IMD입니다. 궁금하신 점을 물어보세요")
 
 if user_input:
+    # 사용자 메시지 추가
     conv_manager.add_message("user", user_input, metadata={"type": "text"})
     
-    context = conv_manager.get_context()
-    history = conv_manager.get_formatted_history(for_llm=True)
+    # 생각 과정 임시 추가
+    conv_manager.add_message("system", "thinking", metadata={"type": "thinking"})
     
-    # 생각 과정 표시
-    thinking_placeholder = st.empty()
-    thinking_placeholder.markdown(
-        """
-        <div class="thinking-process">
-            <div class="thinking-title">✨ Analyzing your question...</div>
-            <div class="thinking-content">
-            • Reviewing symptoms and medical history<br>
-            • Analyzing treatment options<br>
-            • Preparing personalized consultation
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-    
-    time.sleep(1.5)
-    ai_response = generate_ai_response(user_input, context, history)
-    
-    # 생각 과정 제거
-    thinking_placeholder.empty()
-    
-    conv_manager.add_message("ai", ai_response)
+    # 화면 갱신 (생각 과정 표시)
     st.rerun()
 
 # ============================================
