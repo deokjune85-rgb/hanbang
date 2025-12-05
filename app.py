@@ -251,49 +251,72 @@ div[data-testid="stspinner"] {{
 
 /* ========== 모바일 반응형 ========== */
 @media (max-width: 768px) {{
+    /* Streamlit 기본 여백 강제 제거 */
+    .main .block-container {{
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }}
+    
+    .element-container {{
+        margin: 0 !important;
+        padding: 0 !important;
+    }}
+    
+    div[data-testid="stVerticalBlock"] > div {{
+        gap: 0 !important;
+    }}
+    
     /* 타이틀 작게 + 상단 여백 최소화 */
     .title-box {{
-        padding: 8px 16px 6px 16px;
+        padding: 4px 16px 4px 16px !important;
+        margin: 0 !important;
     }}
     
     .title-box h1 {{
         font-size: 20px !important;
         line-height: 1.2 !important;
+        margin: 0 !important;
     }}
     
     .title-box .sub {{
         font-size: 11px;
-        margin-top: 3px;
+        margin: 2px 0 0 0 !important;
     }}
     
     /* 채팅 영역 여백 최소화 */
     .chat-area {{
-        padding: 6px 16px 8px 16px;
+        padding: 4px 16px 6px 16px !important;
         min-height: 100px;
+        margin: 0 !important;
     }}
     
     .ai-msg {{
         font-size: 14px !important;
         padding: 12px 16px;
         max-width: 90%;
-        margin: 6px 0;
+        margin: 4px 0 !important;
     }}
     
     .user-msg {{
         font-size: 13px;
         padding: 10px 16px;
         max-width: 75%;
-        margin: 6px 0;
+        margin: 4px 0 !important;
     }}
     
     /* 버튼 영역 간격 최소화 */
     .btn-area {{
-        padding: 0 16px 12px 16px;
+        padding: 0 16px 10px 16px !important;
+        margin: 0 !important;
     }}
     
     .btn-title {{
         font-size: 12px;
-        margin-bottom: 6px;
+        margin: 0 0 6px 0 !important;
+    }}
+    
+    .stButton {{
+        margin: 0 !important;
     }}
     
     .stButton > button {{
@@ -326,7 +349,7 @@ div[data-testid="stspinner"] {{
 /* 작은 모바일 (iPhone SE 등) */
 @media (max-width: 400px) {{
     .title-box {{
-        padding: 6px 12px 4px 12px;
+        padding: 2px 12px 2px 12px !important;
     }}
     
     .title-box h1 {{
@@ -334,16 +357,16 @@ div[data-testid="stspinner"] {{
     }}
     
     .chat-area {{
-        padding: 4px 12px 6px 12px;
+        padding: 2px 12px 4px 12px !important;
     }}
     
     .ai-msg {{
         font-size: 13px !important;
-        margin: 4px 0;
+        margin: 3px 0 !important;
     }}
     
     .btn-area {{
-        padding: 0 12px 10px 12px;
+        padding: 0 12px 8px 12px !important;
     }}
 }}
 </style>
