@@ -30,7 +30,8 @@ from config import (
 st.set_page_config(
     page_title=APP_TITLE,
     page_icon=APP_ICON,
-    layout=LAYOUT
+    layout=LAYOUT,
+    initial_sidebar_state="collapsed"
 )
 
 # ============================================
@@ -65,11 +66,13 @@ def load_css():
     
     h1 {{
         color: {COLOR_PRIMARY} !important;
-        font-family: 'Arial', sans-serif !important;
+        font-family: 'Arial', 'Helvetica', sans-serif !important;
         font-weight: 700 !important;
-        font-size: 32px !important;
+        font-size: 28px !important;
         margin: 0 !important;
         padding: 0 !important;
+        text-align: center !important;
+        letter-spacing: 1px !important;
     }}
     
     .subtitle {{
@@ -234,9 +237,39 @@ if len(conv_manager.get_history()) == 0:
 # ============================================
 # 3. 헤더
 # ============================================
-st.markdown('<div class="title-container">', unsafe_allow_html=True)
-st.markdown('<h1>IMD MEDICAL SYSTEM</h1>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">24시간 AI 한의사 상담</p>', unsafe_allow_html=True)
+st.markdown(
+    """
+    <div class="title-container">
+        <h1 style="font-family: Arial, sans-serif; text-align: center;">IMD MEDICAL SYSTEM</h1>
+        <p class="subtitle">24시간 AI 한의사 상담</p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+# ============================================
+# 4. 채팅 히스토리 렌더링
+# ============================================
+st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+
+for chat in conv_manager.get_history():
+    role_class = "chat-bubble-ai" if chat['role'] == 'ai' else "chat-bubble-user"
+    if chat['role'] == 'ai':
+        st.markdown(f'<div class="{role_class}">{chat["text"]}</div>', unsafe_allow_html=True)
+    else:
+        st.markdown(f'<div style="text-align: right;"><div class="{role_class}" style="display: inline-block;">{chat["text"]}</div></div>', unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# ============================================
+# 4. 채팅 히스토리 렌더링
+# ============================================
+st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+
+for chat in conv_manager.get_history():
+    role_class = "chat-bubble-ai" if chat['role'] == 'ai' else "chat-bubble-user"
+    st.markdown(f'<div class="{role_class}">{chat["text"]}</div>', unsafe_allow_html=True)
+
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ============================================
